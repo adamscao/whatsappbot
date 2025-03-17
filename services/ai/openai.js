@@ -85,7 +85,7 @@ async function translateText(text, sourceLanguage, targetLanguage) {
         ];
         
         const response = await openai.chat.completions.create({
-            model: 'gpt-3.5-turbo', // Using cheaper model for translations
+            model: 'gpt-4o-mini', // Using cheaper model for translations
             messages: messages,
             temperature: 0.3, // Lower temperature for more consistent translations
             max_tokens: 1000,
@@ -155,7 +155,7 @@ async function needsSearchAugmentation(query) {
         ];
         
         const response = await openai.chat.completions.create({
-            model: 'gpt-3.5-turbo', // Using cheaper model
+            model: 'gpt-4o-mini', // Using cheaper model
             messages: messages,
             temperature: 0.1,
             response_format: { type: "json_object" }
@@ -196,10 +196,7 @@ async function getAvailableModels() {
         return [
             'gpt-4o',
             'gpt-4o-mini',
-            'gpt-4-turbo',
-            'gpt-4',
-            'gpt-3.5-turbo',
-            'gpt-3.5-turbo-16k'
+            'o1-mini'
         ];
     }
 }
