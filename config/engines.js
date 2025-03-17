@@ -45,22 +45,44 @@ const ENGINES = {
 
 // Function to check which engines are available based on environment variables
 function getAvailableEngines() {
-    // Check environment variables and return available engines
+    const availableEngines = {};
+    
+    for (const [engineName, engineConfig] of Object.entries(ENGINES)) {
+        const apiKey = process.env[engineConfig.envKey];
+        if (apiKey) {
+            availableEngines[engineName] = engineConfig;
+        }
+    }
+    
+    return availableEngines;
 }
 
 // Function to validate if an engine is available
 function isEngineAvailable(engineName) {
-    // Check if the specified engine is available
+    if (!ENGINES[engineName]) {
+        return false; // Engine doesn't exist in config
+    }
+    
+    const apiKey = process.env[ENGINES[engineName].envKey];
+    return !!apiKey;
 }
 
 // Function to validate if a model is available for an engine
 function isModelAvailable(engineName, modelName) {
-    // Check if the specified model is available for the engine
+    if (!isEngineAvailable(engineName)) {
+        return false;
+    }
+    
+    return ENGINES[engineName].models.includes(modelName);
 }
 
 // Function to get default model for an engine
 function getDefaultModel(engineName) {
-    // Get the default model for the specified engine
+    if (!isEngineAvailable(engineName)) {
+        return null;
+    }
+    
+    return ENGINES[engineName].defaultModel;
 }
 
 module.exports = {
