@@ -61,7 +61,9 @@ async function handleMessage(message) {
         logger.debug(`Received message from ${message.from}: ${message.body}`);
         
         // Check if message is a command
-        if (message.body.startsWith('!') || message.body.startsWith('/')) {
+        if (message.body.startsWith(config.COMMANDS.prefix) || 
+            message.body.startsWith('!') || 
+            message.body.startsWith('/')) {
             await commandController.handleCommand(client, message);
             return;
         }

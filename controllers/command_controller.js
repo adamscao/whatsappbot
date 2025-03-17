@@ -40,21 +40,21 @@ function parseCommand(message) {
 // Handle help command
 async function handleHelpCommand(client, msg) {
     try {
-        const helpText = `*WhatsApp AI Bot Help*
+        const helpText = `*WhatsApp AI 机器人帮助*
 
-Available commands:
-${config.COMMANDS.prefix}${config.COMMANDS.help} - Show this help message
-${config.COMMANDS.prefix}${config.COMMANDS.list} - List available AI engines and models
-${config.COMMANDS.prefix}${config.COMMANDS.use} <engine> - Switch to a different AI engine
-${config.COMMANDS.prefix}${config.COMMANDS.model} <model> - Switch to a different AI model
-${config.COMMANDS.prefix}${config.COMMANDS.clear} - Clear your conversation history
-${config.COMMANDS.prefix}${config.COMMANDS.price} [symbol] - Get cryptocurrency prices
-${config.COMMANDS.prefix}${config.COMMANDS.reminder} <text> - Set a reminder
-${config.COMMANDS.prefix}${config.COMMANDS.listReminders} - List your active reminders
-${config.COMMANDS.prefix}${config.COMMANDS.removeReminder} <id> - Remove a reminder
-${config.COMMANDS.prefix}${config.COMMANDS.search} <query> - Perform a web search
+可用命令：
+${config.COMMANDS.prefix}${config.COMMANDS.help} - 显示此帮助信息
+${config.COMMANDS.prefix}${config.COMMANDS.list} - 列出可用的 AI 引擎和模型
+${config.COMMANDS.prefix}${config.COMMANDS.use} <引擎> - 切换到不同的 AI 引擎
+${config.COMMANDS.prefix}${config.COMMANDS.model} <模型> - 切换到不同的 AI 模型
+${config.COMMANDS.prefix}${config.COMMANDS.clear} - 清除你的对话历史
+${config.COMMANDS.prefix}${config.COMMANDS.price} [代币符号] - 获取加密货币价格
+${config.COMMANDS.prefix}${config.COMMANDS.reminder} <内容> - 设置提醒
+${config.COMMANDS.prefix}${config.COMMANDS.listReminders} - 列出你的所有提醒
+${config.COMMANDS.prefix}${config.COMMANDS.removeReminder} <ID> - 删除指定提醒
+${config.COMMANDS.prefix}${config.COMMANDS.search} <查询内容> - 执行网页搜索
 
-Example: "${config.COMMANDS.prefix}${config.COMMANDS.use} anthropic" to switch to Claude AI`;
+示例：输入 "${config.COMMANDS.prefix}${config.COMMANDS.use} anthropic" 切换到 Claude AI`;
 
         await client.sendMessage(msg.from, helpText);
         logger.debug(`Sent help information to ${msg.from}`);
@@ -69,11 +69,11 @@ async function handleListCommand(client, msg) {
         const availableEngines = engines.getAvailableEngines();
         
         if (Object.keys(availableEngines).length === 0) {
-            await client.sendMessage(msg.from, "No AI engines are currently available. Please check your configuration.");
+            await client.sendMessage(msg.from, "当前没有可用的 AI 引擎，请检查您的配置。");
             return;
         }
         
-        let responseText = "*Available AI Engines and Models*\n\n";
+        let responseText = "*可用的 AI 引擎和模型*\n\n";
         
         // Get user preferences to mark current selections
         const userPrefs = await userPreferences.getUserPreferences(
@@ -94,10 +94,10 @@ async function handleListCommand(client, msg) {
             responseText += '\n';
         }
         
-        responseText += `Your current engine: *${userPrefs.engine}*\n`;
-        responseText += `Your current model: *${userPrefs.model}*\n\n`;
-        responseText += `To change engine: ${config.COMMANDS.prefix}${config.COMMANDS.use} <engine>\n`;
-        responseText += `To change model: ${config.COMMANDS.prefix}${config.COMMANDS.model} <model>`;
+        responseText += `您当前的引擎: *${userPrefs.engine}*\n`;
+        responseText += `您当前的模型: *${userPrefs.model}*\n\n`;
+        responseText += `切换引擎: ${config.COMMANDS.prefix}${config.COMMANDS.use} <引擎>\n`;
+        responseText += `切换模型: ${config.COMMANDS.prefix}${config.COMMANDS.model} <模型>`;
         
         await client.sendMessage(msg.from, responseText);
         logger.debug(`Sent engine list to ${msg.from}`);
@@ -110,7 +110,7 @@ async function handleListCommand(client, msg) {
 async function handleUseCommand(client, msg, userId, args) {
     try {
         if (!args || args.length === 0) {
-            await client.sendMessage(msg.from, `Please specify an engine to use. Example: ${config.COMMANDS.prefix}${config.COMMANDS.use} openai`);
+            await client.sendMessage(msg.from, `请指定要使用的引擎。例如：${config.COMMANDS.prefix}${config.COMMANDS.use} openai`);
             return;
         }
         
@@ -121,7 +121,7 @@ async function handleUseCommand(client, msg, userId, args) {
             const availableEngines = Object.keys(engines.getAvailableEngines()).join(', ');
             await client.sendMessage(
                 msg.from, 
-                `Engine "${requestedEngine}" is not available. Available engines: ${availableEngines || 'None'}`
+                `引擎 "${requestedEngine}" 不可用。可用引擎：${availableEngines || '无'}`
             );
             return;
         }
@@ -135,7 +135,7 @@ async function handleUseCommand(client, msg, userId, args) {
         
         await client.sendMessage(
             msg.from, 
-            `Switched to *${requestedEngine}* engine with model *${defaultModel}*`
+            `已切换到 *${requestedEngine}* 引擎，使用模型 *${defaultModel}*`
         );
         logger.debug(`User ${userId} switched to engine ${requestedEngine}`);
     } catch (error) {
@@ -147,7 +147,7 @@ async function handleUseCommand(client, msg, userId, args) {
 async function handleModelCommand(client, msg, userId, args) {
     try {
         if (!args || args.length === 0) {
-            await client.sendMessage(msg.from, `Please specify a model to use. Example: ${config.COMMANDS.prefix}${config.COMMANDS.model} gpt-4o`);
+            await client.sendMessage(msg.from, `请指定要使用的模型。例如：${config.COMMANDS.prefix}${config.COMMANDS.model} gpt-4o`);
             return;
         }
         
@@ -161,14 +161,14 @@ async function handleModelCommand(client, msg, userId, args) {
         if (!engines.isModelAvailable(userEngine, requestedModel)) {
             const engineConfig = engines.ENGINES[userEngine];
             if (!engineConfig) {
-                await client.sendMessage(msg.from, `Your current engine "${userEngine}" is not configured properly.`);
+                await client.sendMessage(msg.from, `您当前的引擎 "${userEngine}" 配置不正确。`);
                 return;
             }
             
             const availableModels = engineConfig.models.join(', ');
             await client.sendMessage(
                 msg.from, 
-                `Model "${requestedModel}" is not available for ${userEngine}. Available models: ${availableModels}`
+                `模型 "${requestedModel}" 不适用于 ${userEngine}。可用模型：${availableModels}`
             );
             return;
         }
@@ -178,7 +178,7 @@ async function handleModelCommand(client, msg, userId, args) {
         
         await client.sendMessage(
             msg.from, 
-            `Switched to model *${requestedModel}* for *${userEngine}* engine`
+            `已为 *${userEngine}* 引擎切换到模型 *${requestedModel}*`
         );
         logger.debug(`User ${userId} switched to model ${requestedModel}`);
     } catch (error) {
@@ -192,7 +192,7 @@ async function handleClearCommand(client, msg, userId, chatId) {
         // Clear chat history
         await messageModel.clearChatHistory(chatId);
         
-        await client.sendMessage(msg.from, "Your conversation history has been cleared.");
+        await client.sendMessage(msg.from, "您的对话历史已清除。");
         logger.debug(`Cleared chat history for ${chatId}`);
     } catch (error) {
         logger.error(`Error handling clear command: ${error.message}`, { error });
@@ -208,24 +208,17 @@ async function handlePriceCommand(client, msg, args) {
             symbol = args[0].toUpperCase();
         }
         
-        const priceData = await priceService.getCryptoPrices(symbol);
-        let responseText = "*Cryptocurrency Prices*\n\n";
+        // Send a "loading" message to improve user experience
+        await client.sendMessage(msg.from, "正在获取加密货币价格...");
         
-        if (typeof priceData === 'string') {
-            // Error message
-            responseText = priceData;
-        } else {
-            // Format price data
-            for (const [coin, data] of Object.entries(priceData)) {
-                responseText += `*${coin}*: $${data.usd.toLocaleString()} (${data.usd_24h_change.toFixed(2)}%)\n`;
-            }
-        }
+        const priceData = await priceService.getCryptoPrices(symbol);
+        const responseText = priceService.formatCryptoPrices(priceData);
         
         await client.sendMessage(msg.from, responseText);
         logger.debug(`Sent price data to ${msg.from}`);
     } catch (error) {
         logger.error(`Error handling price command: ${error.message}`, { error });
-        await client.sendMessage(msg.from, "Sorry, I couldn't fetch cryptocurrency prices at this time.");
+        await client.sendMessage(msg.from, "抱歉，暂时无法获取加密货币价格，请稍后再试。");
     }
 }
 
@@ -233,12 +226,12 @@ async function handlePriceCommand(client, msg, args) {
 async function handleSearchCommand(client, msg, args) {
     try {
         if (!args || args.length === 0) {
-            await client.sendMessage(msg.from, `Please specify a search query. Example: ${config.COMMANDS.prefix}${config.COMMANDS.search} latest news`);
+            await client.sendMessage(msg.from, `请指定搜索查询。例如：${config.COMMANDS.prefix}${config.COMMANDS.search} 最新新闻`);
             return;
         }
         
         const query = args.join(' ');
-        await client.sendMessage(msg.from, `Searching for: "${query}"...`);
+        await client.sendMessage(msg.from, `正在搜索："${query}"...`);
         
         // Check if user wants Chinese search
         const useChineseSearch = query.toLowerCase().includes('chinese') || 
@@ -252,12 +245,12 @@ async function handleSearchCommand(client, msg, args) {
         const searchResults = await searchService.search(processedQuery, useChineseSearch);
         
         if (!searchResults || searchResults.length === 0) {
-            await client.sendMessage(msg.from, "No search results found. Please try a different query.");
+            await client.sendMessage(msg.from, "未找到搜索结果，请尝试其他查询。");
             return;
         }
         
         // Format search results
-        let responseText = `*Search Results for: ${query}*\n\n`;
+        let responseText = `*搜索结果：${query}*\n\n`;
         
         for (let i = 0; i < Math.min(searchResults.length, config.SEARCH.maxResults); i++) {
             const result = searchResults[i];
@@ -270,7 +263,7 @@ async function handleSearchCommand(client, msg, args) {
         logger.debug(`Sent search results to ${msg.from} for query: ${query}`);
     } catch (error) {
         logger.error(`Error handling search command: ${error.message}`, { error });
-        await client.sendMessage(msg.from, "Sorry, I couldn't perform the search at this time.");
+        await client.sendMessage(msg.from, "抱歉，暂时无法进行搜索。");
     }
 }
 
@@ -331,7 +324,7 @@ async function handleCommand(client, msg) {
             default:
                 await client.sendMessage(
                     msg.from, 
-                    `Unknown command: *${command}*. Type ${config.COMMANDS.prefix}${config.COMMANDS.help} for available commands.`
+                    `未知命令：*${command}*。请输入 ${config.COMMANDS.prefix}${config.COMMANDS.help} 查看可用命令。`
                 );
         }
     } catch (error) {

@@ -47,12 +47,33 @@ async function sendMessage(message, messageHistory, model = 'gpt-4o') {
     try {
         logger.debug(`Sending message to OpenAI using model: ${model}`);
         
-        const messages = formatMessages(message, messageHistory);
+        // Check if we have any system messages with search results
+        let hasSearchResults = false;
+        let requestMessages = [];
+        
+        // Format messages - maintain all existing message history
+        for (const msg of messageHistory) {
+            requestMessages.push(msg);
+            if (msg.role === 'system' && 
+                msg.content.includes('search results') && 
+                msg.content.includes('Source:')) {
+                hasSearchResults = true;
+            }
+        }
+        
+        // Add the current user message
+        requestMessages.push({
+            role: 'user',
+            content: message
+        });
+        
+        // If we have search results, adjust temperature to be more factual
+        const temperature = hasSearchResults ? 0.3 : 0.7;
         
         const response = await openai.chat.completions.create({
             model: model,
-            messages: messages,
-            temperature: 0.7,
+            messages: requestMessages,
+            temperature: temperature,
             max_tokens: 1000,
             top_p: 1,
             frequency_penalty: 0,

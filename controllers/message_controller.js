@@ -111,19 +111,38 @@ async function processAIResponse(client, msg, userId, chatId, isGroup) {
         
         // Add search results to message if available
         let augmentedMessage = messageText;
+        let systemInstructions = "";
+        
         if (searchResults && searchResults.length > 0) {
-            augmentedMessage = `${messageText}\n\nHere's some information that might help answer the question:\n\n`;
+            // Create separate system instructions for handling search results
+            systemInstructions = `Important: I'm providing you with recent search results to help answer this question. 
+The user's original question was: "${messageText}"
+
+Here's some information that might help answer the question:
+
+`;
             
             for (let i = 0; i < Math.min(searchResults.length, 3); i++) {
                 const result = searchResults[i];
-                augmentedMessage += `[${i+1}] ${result.title}\n${result.snippet}\nSource: ${result.link}\n\n`;
+                systemInstructions += `[${i+1}] ${result.title}\n${result.snippet}\nSource: ${result.link}\n\n`;
             }
+            
+            systemInstructions += `Based on the search results above, please answer the user's original question. 
+If the search results contain relevant information, use it to provide an accurate response.
+If the search results don't directly answer the question, say so and provide the best answer you can.
+If the question is in a non-English language, respond in the same language.`;
+            
+            // Add a temporary system message with search results to the message history
+            messageHistory.unshift({
+                role: "system",
+                content: systemInstructions
+            });
         }
         
         // Send to AI service
         let aiResponse;
         try {
-            aiResponse = await aiService.sendMessage(userId, chatId, augmentedMessage, messageHistory);
+            aiResponse = await aiService.sendMessage(userId, chatId, messageText, messageHistory);
         } catch (aiError) {
             logger.error(`Error getting AI response: ${aiError.message}`, { error: aiError });
             aiResponse = "I'm sorry, I encountered an error processing your request. Please try again later.";
@@ -143,7 +162,7 @@ async function processAIResponse(client, msg, userId, chatId, isGroup) {
         try {
             await client.sendMessage(
                 msg.from, 
-                "I'm sorry, I encountered an error while processing your message. Please try again later."
+                "对不起，我在处理您的消息时遇到了错误。请稍后再试。"
             );
         } catch (sendError) {
             logger.error(`Error sending error message: ${sendError.message}`, { error: sendError });
