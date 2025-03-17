@@ -97,7 +97,10 @@ async function initializeApp() {
         logger.info('Starting WhatsApp client...');
         await client.initialize();
     } catch (error) {
-        logger.error('Failed to initialize application', { error });
+        logger.error(`Failed to initialize application: ${error.message}`, { 
+            error, 
+            stack: error.stack 
+        });
         process.exit(1);
     }
 }
