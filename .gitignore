@@ -138,3 +138,7 @@ dist
 # whatsapp-web.js auth files
 .wwebjs_auth/
 .wwebjs_cache/
+
+# sqlite database
+database/whatsapp_bot.sqlite
+

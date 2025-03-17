@@ -3,168 +3,158 @@
 
 const axios = require('axios');
 const logger = require('../../utils/logger');
+
 const config = require('../../config/config');
 const schedule = require('node-schedule');
+
+// Store mapping of symbols to CoinGecko IDs
+let symbolToIdMap = {};
+let idToSymbolMap = {};
+
+// Fetch all coins list from CoinGecko to build a symbol to ID mapping
+async function initCoinMappings() {
+    try {
+        logger.debug('Initializing cryptocurrency symbol mappings');
+        
+        // CoinGecko API endpoint for coin list
+        const url = 'https://api.coingecko.com/api/v3/coins/list';
+        
+        const response = await axios.get(url, {
+            timeout: 15000 // 15 seconds timeout
+        });
+        
+        if (!response.data || !Array.isArray(response.data)) {
+            throw new Error('Invalid response format from CoinGecko API');
+        }
+        
+        // Reset the mappings
+        symbolToIdMap = {};
+        idToSymbolMap = {};
+        
+        // Build mappings
+        for (const coin of response.data) {
+            if (coin.symbol && coin.id) {
+                const upperSymbol = coin.symbol.toUpperCase();
+                
+                // For symbols with multiple coins, prefer the more "canonical" ones
+                // For example, prefer "bitcoin" over "bitcoin-cash" for BTC
+                if (!symbolToIdMap[upperSymbol] || isPriorityCoin(coin.id)) {
+                    symbolToIdMap[upperSymbol] = coin.id;
+                }
+                
+                // Also store reverse mapping
+                idToSymbolMap[coin.id] = upperSymbol;
+            }
+        }
+        
+        logger.info(`Initialized mappings for ${Object.keys(symbolToIdMap).length} cryptocurrencies`);
+        
+        // Validate that all configured currencies can be mapped
+        const configuredSymbols = config.CRYPTO_SCHEDULER.currencies;
+        const unmappableSymbols = configuredSymbols.filter(sym => !symbolToIdMap[sym]);
+        
+        if (unmappableSymbols.length > 0) {
+            logger.warn(`Could not map the following symbols to CoinGecko IDs: ${unmappableSymbols.join(', ')}`);
+        }
+        
+        return true;
+    } catch (error) {
+        logger.error(`Error initializing coin mappings: ${error.message}`, { error });
+        
+        // Set fallback mappings for common cryptocurrencies
+        symbolToIdMap = {
+            'BTC': 'bitcoin',
+            'ETH': 'ethereum',
+            'LTC': 'litecoin',
+            'BCH': 'bitcoin-cash'
+        };
+        
+        idToSymbolMap = {
+            'bitcoin': 'BTC',
+            'ethereum': 'ETH',
+            'litecoin': 'LTC',
+            'bitcoin-cash': 'BCH'
+        };
+        
+        logger.warn('Using fallback cryptocurrency mappings');
+        return false;
+    }
+}
+
+// Helper to prioritize certain coin IDs when there are multiple options for a symbol
+function isPriorityCoin(id) {
+    const priorities = [
+        'bitcoin', 'ethereum', 'litecoin', 'bitcoin-cash', 
+        'binancecoin', 'ripple', 'cardano', 'polkadot'
+    ];
+    return priorities.includes(id);
+}
+
+// Get CoinGecko ID for a symbol
+function getCoinId(symbol) {
+    const upperSymbol = symbol.toUpperCase();
+    return symbolToIdMap[upperSymbol] || symbol.toLowerCase();
+}
 
 // Fetch cryptocurrency prices from API
 async function getCryptoPrices(symbol = 'all') {
     try {
-        // Use the config settings
-        const currenciesToFetch = symbol.toLowerCase() === 'all' 
-            ? config.CRYPTO_SCHEDULER.currencies 
-            : [symbol.toUpperCase()];
-        
-        // Try a more reliable CoinGecko endpoint
-        const currencyParam = currenciesToFetch.join(',').toLowerCase();
-        
-        // Try fetching data from CoinGecko's free API
-        let priceData = {};
-        let success = false;
-        
-        try {
-            // Try CoinGecko v3 API first
-            const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${currencyParam}&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=24h`;
-            
-            logger.debug(`Trying CoinGecko markets API: ${url}`);
-            
-            const response = await axios.get(url, {
-                timeout: 10000,
-                headers: {
-                    'Accept': 'application/json',
-                    'User-Agent': 'WhatsApp Bot Price Service'
-                }
-            });
-            
-            if (response.data && Array.isArray(response.data) && response.data.length > 0) {
-                logger.debug(`Got ${response.data.length} results from CoinGecko markets API`);
-                
-                // Process the data into our format
-                for (const coin of response.data) {
-                    const coinSymbol = coin.symbol.toUpperCase();
-                    
-                    // Calculate EUR and CNY based on USD (approximation)
-                    const usdPrice = coin.current_price || 0;
-                    const eurPrice = usdPrice * 0.92; // Approximate USD to EUR conversion
-                    const cnyPrice = usdPrice * 7.26; // Approximate USD to CNY conversion
-                    
-                    priceData[coinSymbol] = {
-                        usd: usdPrice,
-                        eur: eurPrice,
-                        cny: cnyPrice,
-                        usd_24h_change: coin.price_change_percentage_24h || 0,
-                        eur_24h_change: coin.price_change_percentage_24h || 0,
-                        cny_24h_change: coin.price_change_percentage_24h || 0
-                    };
-                }
-                
-                success = true;
-            }
-        } catch (coinGeckoError) {
-            logger.warn(`CoinGecko markets API failed: ${coinGeckoError.message}`);
+        // Ensure mappings are initialized
+        if (Object.keys(symbolToIdMap).length === 0) {
+            await initCoinMappings();
         }
         
-        // If CoinGecko failed, try Binance API as fallback
-        if (!success) {
-            try {
-                logger.debug('Trying Binance API as fallback');
-                
-                const binanceResponse = await axios.get('https://api.binance.com/api/v3/ticker/24hr', {
-                    timeout: 10000
-                });
-                
-                if (binanceResponse.data && Array.isArray(binanceResponse.data)) {
-                    // Filter only the symbols we want
-                    const relevantPairs = binanceResponse.data.filter(pair => {
-                        const symbol = pair.symbol;
-                        return currenciesToFetch.some(crypto => 
-                            symbol === `${crypto.toUpperCase()}USDT`
-                        );
-                    });
-                    
-                    if (relevantPairs.length > 0) {
-                        logger.debug(`Got ${relevantPairs.length} results from Binance API`);
-                        
-                        for (const pair of relevantPairs) {
-                            // Extract the crypto symbol (remove USDT)
-                            const coinSymbol = pair.symbol.replace('USDT', '');
-                            
-                            const usdPrice = parseFloat(pair.lastPrice);
-                            const priceChangePercent = parseFloat(pair.priceChangePercent);
-                            
-                            // Convert to other currencies
-                            const eurPrice = usdPrice * 0.92; // Approximate USD to EUR conversion
-                            const cnyPrice = usdPrice * 7.26; // Approximate USD to CNY conversion
-                            
-                            priceData[coinSymbol] = {
-                                usd: usdPrice,
-                                eur: eurPrice,
-                                cny: cnyPrice,
-                                usd_24h_change: priceChangePercent,
-                                eur_24h_change: priceChangePercent,
-                                cny_24h_change: priceChangePercent
-                            };
-                        }
-                        
-                        success = true;
-                    }
-                }
-            } catch (binanceError) {
-                logger.warn(`Binance API fallback failed: ${binanceError.message}`);
-            }
+        // Determine which currencies to fetch
+        let currenciesToFetch = [];
+        
+        if (symbol.toLowerCase() === 'all') {
+            // Use the config settings and map to proper IDs
+            currenciesToFetch = config.CRYPTO_SCHEDULER.currencies.map(sym => getCoinId(sym));
+        } else {
+            // Single currency - map to CoinGecko ID
+            currenciesToFetch = [getCoinId(symbol)];
         }
         
-        // If all APIs failed, use mock data
-        if (!success || Object.keys(priceData).length === 0) {
-            logger.warn('All APIs failed, using mock data');
-            return getMockCryptoPrices();
+        // Join currencies with comma for API
+        const currencyParam = currenciesToFetch.join(',');
+        
+        // Currency conversion units
+        const vsCurrencies = 'usd,cny';
+        
+        // Build API URL
+        const url = `${config.CRYPTO_SCHEDULER.apiEndpoint}?ids=${currencyParam}&vs_currencies=${vsCurrencies}&include_24hr_change=true`;
+        
+        logger.debug(`Fetching cryptocurrency prices from: ${url}`);
+        
+        const response = await axios.get(url, {
+            timeout: 10000 // 10 seconds timeout
+        });
+        
+        if (!response.data || Object.keys(response.data).length === 0) {
+            return `No price data available for ${currencyParam}`;
         }
         
-        logger.debug(`Successfully fetched prices for ${Object.keys(priceData).length} cryptocurrencies`);
-        return priceData;
+        // Format the response
+        const formattedData = {};
+        
+        for (const [coinId, priceData] of Object.entries(response.data)) {
+            // Convert back to symbol (like BTC) if available, or use the ID
+            const coinSymbol = idToSymbolMap[coinId] || coinId.toUpperCase();
+            
+            formattedData[coinSymbol] = {
+                usd: priceData.usd || 0,
+                cny: priceData.cny || 0,
+                usd_24h_change: priceData.usd_24h_change || 0,
+                cny_24h_change: priceData.cny_24h_change || 0
+            };
+        }
+        
+        logger.debug(`Fetched prices for ${Object.keys(formattedData).length} cryptocurrencies`);
+        return formattedData;
     } catch (error) {
         logger.error(`Error fetching cryptocurrency prices: ${error.message}`, { error });
-        // Return mock data instead of error message
-        logger.warn('Using mock cryptocurrency price data due to API error');
-        return getMockCryptoPrices();
+        return `Error fetching cryptocurrency prices: ${error.message}`;
     }
-}
-
-// Get mock cryptocurrency prices (for testing or when API fails)
-function getMockCryptoPrices() {
-    return {
-        'BTC': {
-            usd: 90567,
-            eur: 83322,
-            cny: 657518,
-            usd_24h_change: 8.34,
-            eur_24h_change: 8.34,
-            cny_24h_change: 8.34
-        },
-        'ETH': {
-            usd: 2226,
-            eur: 2048,
-            cny: 16161,
-            usd_24h_change: 6.32,
-            eur_24h_change: 6.32,
-            cny_24h_change: 6.32
-        },
-        'LTC': {
-            usd: 104,
-            eur: 96,
-            cny: 755,
-            usd_24h_change: 2.16,
-            eur_24h_change: 2.16,
-            cny_24h_change: 2.16
-        },
-        'BCH': {
-            usd: 385,
-            eur: 354,
-            cny: 2795,
-            usd_24h_change: 27.19,
-            eur_24h_change: 27.19,
-            cny_24h_change: 27.19
-        }
-    };
 }
 
 // Format cryptocurrency prices for display
@@ -175,20 +165,29 @@ function formatCryptoPrices(priceData) {
     }
     
     try {
-        // Format according to the required table layout
         let formattedText = "*Cryptocurrency Prices*\n\n";
         formattedText += "====================\n";
-        formattedText += "货币   USD     CNY     涨跌幅   \n";
+        formattedText += "货币   USD     CNY     涨跌幅\n";
         formattedText += "====================\n";
         
         for (const [coin, data] of Object.entries(priceData)) {
-            // Format with the required layout
-            const usdPrice = Math.round(data.usd).toString();
-            const cnyPrice = Math.round(data.cny).toString();
-            const changePercent = data.usd_24h_change.toFixed(2);
+            // Format USD price
+            const usdPrice = data.usd.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: data.usd < 1 ? 4 : 2
+            });
+            
+            // Format CNY price
+            const cnyPrice = data.cny.toLocaleString('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: data.cny < 1 ? 4 : 2
+            });
+            
+            // Format 24h change
+            const change = data.usd_24h_change.toFixed(2);
             const changeSign = data.usd_24h_change >= 0 ? '+' : '';
             
-            formattedText += `${coin} : $  ${usdPrice.padEnd(5)} ¥  ${cnyPrice.padEnd(7)} ${changeSign}${changePercent}%\n`;
+            formattedText += `${coin} : $ ${usdPrice.padStart(6)} ¥ ${cnyPrice.padStart(6)}    ${changeSign}${change}%\n`;
         }
         
         return formattedText;
@@ -238,6 +237,9 @@ function scheduleCryptoPriceUpdates(client, scheduler, chatIds = []) {
             return false;
         }
         
+        // Initialize coin mappings
+        initCoinMappings();
+        
         // Create a recurring rule based on the interval in config
         const interval = config.CRYPTO_SCHEDULER.intervalHours || 4;
         const rule = new schedule.RecurrenceRule();
@@ -258,6 +260,7 @@ function scheduleCryptoPriceUpdates(client, scheduler, chatIds = []) {
 }
 
 module.exports = {
+    initCoinMappings,
     getCryptoPrices,
     formatCryptoPrices,
     sendCryptoPrices,
