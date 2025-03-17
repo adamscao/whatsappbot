@@ -1,6 +1,9 @@
 // app.js
 // Main application entry point - initializes WhatsApp client, database, and services
 
+// Load environment variables
+require('dotenv').config();
+
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 const db = require('./database/db');
