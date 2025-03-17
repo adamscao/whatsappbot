@@ -13,27 +13,61 @@ if (!fs.existsSync(logsDir)) {
 
 // Configure logger
 const logger = winston.createLogger({
-    // Logger configuration
+    level: process.env.LOG_LEVEL || 'info',
+    format: winston.format.combine(
+        winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+        winston.format.errors({ stack: true }),
+        winston.format.splat(),
+        winston.format.json()
+    ),
+    defaultMeta: { service: 'whatsapp-bot' },
+    transports: [
+        new winston.transports.File({
+            filename: path.join(logsDir, 'error.log'),
+            level: 'error',
+            maxsize: 5242880, // 5MB
+            maxFiles: 5
+        }),
+        new winston.transports.File({
+            filename: path.join(logsDir, 'combined.log'),
+            maxsize: 10485760, // 10MB
+            maxFiles: 5
+        })
+    ]
 });
+
+// If we're not in production, also log to the console
+if (process.env.NODE_ENV !== 'production') {
+    logger.add(new winston.transports.Console({
+        format: winston.format.combine(
+            winston.format.colorize(),
+            winston.format.simple()
+        )
+    }));
+}
 
 // Log information message
 function info(message) {
-    // Log info level message
+    logger.info(message);
 }
 
 // Log warning message
 function warn(message) {
-    // Log warning level message
+    logger.warn(message);
 }
 
 // Log error message
-function error(message, err) {
-    // Log error level message with optional error object
+function error(message, errObj = null) {
+    if (errObj) {
+        logger.error(`${message}`, { error: errObj });
+    } else {
+        logger.error(message);
+    }
 }
 
 // Log debug message
 function debug(message) {
-    // Log debug level message
+    logger.debug(message);
 }
 
 module.exports = {
