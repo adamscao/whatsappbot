@@ -76,7 +76,7 @@ async function handleListRemindersCommand(client, msg, userId) {
         let responseText = "*您已激活的提醒有：*\n\n";
         
         for (const reminder of reminders) {
-            const reminderTime = new Date(reminder.time);
+            const reminderTime = new Date(reminder.trigger_time);
             const timeString = reminderTime.toLocaleString();
             const timeFromNow = getRelativeTimeString(reminderTime);
             
@@ -117,7 +117,7 @@ async function handleRemoveReminderCommand(client, msg, userId, reminderId) {
             return;
         }
         
-        if (reminder.userId !== userId) {
+        if (reminder.user_id !== userId) {
             await client.sendMessage(msg.from, "您没有权限删除这个提醒。");
             return;
         }
