@@ -21,53 +21,18 @@ async function handleMessage(client, msg) {
         // Get basic message info
         const chatId = msg.from;
         const userId = msg.author || msg.from.split('@')[0];
-        const isGroup = msg.from.includes('-');
+        const isGroup = messageParser.isGroupMessage(msg);
         
-        logger.debug(`Processing message from ${userId} in chat ${chatId}`);
+        logger.debug(`Processing AI response for message: "${msg.body}"`);
         
         // Save the user's message to the database
         await saveMessageToDatabase(msg, chatId, msg.body, 'user');
         
-        // Check if the bot should respond
-        let shouldRespond = false;
-        
-        if (isGroup) {
-            // In groups, only respond if mentioned or if the bot's attention is requested
-            shouldRespond = isBotMentioned(msg);
-        } else {
-            // In private chats, always respond
-            shouldRespond = true;
-        }
-        
-        if (shouldRespond) {
-            await processAIResponse(client, msg, userId, chatId, isGroup);
-        }
+        // Process the AI response
+        await processAIResponse(client, msg, userId, chatId, isGroup);
     } catch (error) {
         logger.error(`Error processing message: ${error.message}`, { error });
     }
-}
-
-// Check if bot is mentioned in a group chat
-function isBotMentioned(msg) {
-    if (!msg.isGroup) {
-        return false;
-    }
-    
-    // Check if message mentions the bot by @mentioning its name
-    // This depends on how mentions work in whatsapp-web.js
-    if (msg.mentionedIds && msg.mentionedIds.includes(client.info.wid._serialized)) {
-        return true;
-    }
-    
-    // Check common ways of addressing the bot
-    const botIndicators = [
-        '@bot', 'hey bot', 'bot,', 'bot:', 'dear bot',
-        'ai,', 'ai:', 'ai bot', 'assistant',
-        'gpt', 'claude', 'gemini'
-    ];
-    
-    const lowerCaseBody = msg.body.toLowerCase();
-    return botIndicators.some(indicator => lowerCaseBody.includes(indicator));
 }
 
 // Process AI response
@@ -80,8 +45,10 @@ async function processAIResponse(client, msg, userId, chatId, isGroup) {
         // Get message history for context
         const messageHistory = await getMessageHistory(chatId, userId);
         
+        // Use the already processed message text (bot mentions already removed in app.js)
+        let messageText = msg.body;
+        
         // Check if we should perform a search first
-        const messageText = msg.body;
         let needsSearch = false;
         let searchResults = null;
         
@@ -111,43 +78,30 @@ async function processAIResponse(client, msg, userId, chatId, isGroup) {
         
         // Add search results to message if available
         let augmentedMessage = messageText;
-        let systemInstructions = "";
-        
         if (searchResults && searchResults.length > 0) {
-            // Create separate system instructions for handling search results
-            systemInstructions = `Important: I'm providing you with recent search results to help answer this question. 
-The user's original question was: "${messageText}"
+            logger.debug(`Adding ${searchResults.length} search results to AI context`);
 
-Here's some information that might help answer the question:
+            // Format search results in a structured way that will help the AI
+            augmentedMessage = `${messageText}\n\n### Search Results\n\n`;
 
-`;
-            
             for (let i = 0; i < Math.min(searchResults.length, 3); i++) {
                 const result = searchResults[i];
-                systemInstructions += `[${i+1}] ${result.title}\n${result.snippet}\nSource: ${result.link}\n\n`;
+                augmentedMessage += `[${i + 1}] ${result.title}\n${result.snippet}\nSource: ${result.link}\n\n`;
             }
-            
-            systemInstructions += `Based on the search results above, please answer the user's original question. 
-If the search results contain relevant information, use it to provide an accurate response.
-If the search results don't directly answer the question, say so and provide the best answer you can.
-If the question is in a non-English language, respond in the same language.`;
-            
-            // Add a temporary system message with search results to the message history
-            messageHistory.unshift({
-                role: "system",
-                content: systemInstructions
-            });
+
+            augmentedMessage += `\nPlease use these search results to help answer the question: "${messageText}"\n`;
         }
-        
+
         // Send to AI service
         let aiResponse;
         try {
-            aiResponse = await aiService.sendMessage(userId, chatId, messageText, messageHistory);
+            logger.debug(`Sending augmented message to AI: length=${augmentedMessage.length}`);
+            aiResponse = await aiService.sendMessage(userId, chatId, augmentedMessage, messageHistory);
         } catch (aiError) {
             logger.error(`Error getting AI response: ${aiError.message}`, { error: aiError });
             aiResponse = "I'm sorry, I encountered an error processing your request. Please try again later.";
         }
-        
+
         // Send the response
         await client.sendMessage(chatId, aiResponse);
         
@@ -162,7 +116,7 @@ If the question is in a non-English language, respond in the same language.`;
         try {
             await client.sendMessage(
                 msg.from, 
-                "对不起，我在处理您的消息时遇到了错误。请稍后再试。"
+                "I'm sorry, I encountered an error while processing your message. Please try again later."
             );
         } catch (sendError) {
             logger.error(`Error sending error message: ${sendError.message}`, { error: sendError });
@@ -247,7 +201,6 @@ async function getMessageHistory(chatId, userId) {
 
 module.exports = {
     handleMessage,
-    isBotMentioned,
     processAIResponse,
     saveMessageToDatabase,
     getMessageHistory

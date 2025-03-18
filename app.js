@@ -12,6 +12,7 @@ const commandController = require('./controllers/command_controller');
 const reminderService = require('./services/reminder/reminder_service');
 const scheduler = require('./utils/scheduler');
 const logger = require('./utils/logger');
+const messageParser = require('./utils/message_parser');
 const config = require('./config/config');
 
 // Initialize WhatsApp client
@@ -60,16 +61,41 @@ async function handleMessage(message) {
         
         logger.debug(`Received message from ${message.from}: ${message.body}`);
         
-        // Check if message is a command
-        if (message.body.startsWith(config.COMMANDS.prefix) || 
-            message.body.startsWith('!') || 
-            message.body.startsWith('/')) {
-            await commandController.handleCommand(client, message);
+        // Determine if it's a group chat
+        const isGroup = messageParser.isGroupMessage(message);
+        
+        // For group chats, check if bot is mentioned
+        if (isGroup) {
+            const isMentioned = messageParser.isBotMentioned(message, client.info.wid._serialized);
+            
+            // Skip if not mentioned in a group chat
+            if (!isMentioned) {
+                logger.debug('Message in group but bot not mentioned, ignoring');
+                return;
+            }
+            
+            logger.debug('Bot mentioned in group chat, processing message');
+        }
+        
+        // Remove bot mention regardless of whether it's a group or private chat
+        const processedBody = messageParser.removeBotMention(message.body, client.info.wid.user);
+        
+        // Create a processed message object with the modified body
+        const processedMessage = {...message, body: processedBody};
+        
+        logger.debug(`Processed message: ${processedBody}`);
+        
+        // Check if processed message is a command
+        if (processedBody.startsWith(config.COMMANDS.prefix) || 
+            processedBody.startsWith('!') || 
+            processedBody.startsWith('/')) {
+            logger.debug(`Detected command: ${processedBody}`);
+            await commandController.handleCommand(client, processedMessage);
             return;
         }
         
-        // Handle as regular message
-        await messageController.handleMessage(client, message);
+        // Not a command, handle as regular message
+        await messageController.handleMessage(client, processedMessage);
     } catch (error) {
         logger.error(`Error handling message: ${error.message}`, { error });
     }

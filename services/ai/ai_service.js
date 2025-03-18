@@ -34,6 +34,9 @@ async function sendMessage(userId, chatId, message, messageHistory) {
         const engineName = userPrefs.engine || 'openai';
         const modelName = userPrefs.model || engines.getDefaultModel(engineName);
         
+        // Deep copy the message history to avoid modifying the original
+        const msgHistory = JSON.parse(JSON.stringify(messageHistory));
+        
         // Check if engine is available
         if (!engines.isEngineAvailable(engineName)) {
             logger.warn(`Engine ${engineName} not available, falling back to default`);
@@ -46,7 +49,7 @@ async function sendMessage(userId, chatId, message, messageHistory) {
             
             const service = getAIService(firstAvailableEngine);
             const defaultModel = engines.getDefaultModel(firstAvailableEngine);
-            return await service.sendMessage(message, messageHistory, defaultModel);
+            return await service.sendMessage(message, msgHistory, defaultModel);
         }
         
         // Check if model is available for engine
@@ -54,12 +57,15 @@ async function sendMessage(userId, chatId, message, messageHistory) {
             logger.warn(`Model ${modelName} not available for ${engineName}, using default model`);
             const defaultModel = engines.getDefaultModel(engineName);
             const service = getAIService(engineName);
-            return await service.sendMessage(message, messageHistory, defaultModel);
+            return await service.sendMessage(message, msgHistory, defaultModel);
         }
         
         // Route to appropriate service
         const service = getAIService(engineName);
-        return await service.sendMessage(message, messageHistory, modelName);
+        const response = await service.sendMessage(message, msgHistory, modelName);
+        
+        logger.debug(`Got response from ${engineName} using model ${modelName}`);
+        return response;
     } catch (error) {
         logger.error(`Error in sendMessage: ${error.message}`, { error });
         throw error;

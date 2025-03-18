@@ -53,7 +53,8 @@ function extractChatId(msg) {
 function isGroupMessage(msg) {
     if (!msg) return false;
     
-    return msg.from && msg.from.includes('-');
+    // Update to use @g.us suffix which is WhatsApp's group chat identifier
+    return msg.from && msg.from.endsWith('@g.us');
 }
 
 // Extract quoted message if present
@@ -121,6 +122,26 @@ function extractCommand(msg, prefix = '$') {
     return { command, args };
 }
 
+// Check if the bot is mentioned in a message
+function isBotMentioned(msg, botId) {
+    if (!msg || !msg.body) return false;
+    
+    // Check if message mentions the bot by @mentioning its number
+    if (msg.mentionedIds && msg.mentionedIds.includes(botId)) {
+        return true;
+    }
+    
+    // Check common ways of addressing the bot
+    const botIndicators = [
+        '@bot', 'hey bot', 'bot,', 'bot:', 'dear bot',
+        'ai,', 'ai:', 'ai bot', 'assistant',
+        'gpt', 'claude', 'gemini'
+    ];
+    
+    const lowerCaseBody = msg.body.toLowerCase();
+    return botIndicators.some(indicator => lowerCaseBody.includes(indicator));
+}
+
 module.exports = {
     removeBotMention,
     extractUserId,
@@ -130,5 +151,6 @@ module.exports = {
     getSenderName,
     formatMessageForAI,
     isCommand,
-    extractCommand
+    extractCommand,
+    isBotMentioned
 };
