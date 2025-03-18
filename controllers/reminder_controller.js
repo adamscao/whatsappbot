@@ -11,7 +11,7 @@ async function handleReminderCommand(client, msg, userId, chatId, isGroup, remin
         if (!reminderText || reminderText.trim().length === 0) {
             await client.sendMessage(
                 msg.from, 
-                `Please specify the reminder text. Example: ${config.COMMANDS.prefix}${config.COMMANDS.reminder} Call John tomorrow at 3pm`
+                `请指定提醒文本。 例如： ${config.COMMANDS.prefix}${config.COMMANDS.reminder} 明天下午3点给小王打电话。`
             );
             return;
         }
@@ -25,7 +25,7 @@ async function handleReminderCommand(client, msg, userId, chatId, isGroup, remin
         if (!reminderData || !reminderData.time || !reminderData.content) {
             await client.sendMessage(
                 msg.from, 
-                "I couldn't understand the time for this reminder. Please try again with a clearer time specification."
+                "我无法理解此提醒的时间。请尝试使用更明确的时间说明。"
             );
             return;
         }
@@ -48,7 +48,7 @@ async function handleReminderCommand(client, msg, userId, chatId, isGroup, remin
         // Confirm to user
         await client.sendMessage(
             msg.from, 
-            `✅ Reminder set for *${reminderData.relativeTime}*:\n\n${reminderData.content}\n\nReminder ID: ${reminderId}`
+            `✅ 提醒设置 *${reminderData.relativeTime}*:\n\n${reminderData.content}\n\n提醒编号: ${reminderId}`
         );
         
         logger.debug(`Created reminder for user ${userId} at ${reminderData.time}`);
@@ -56,7 +56,7 @@ async function handleReminderCommand(client, msg, userId, chatId, isGroup, remin
         logger.error(`Error handling reminder command: ${error.message}`, { error });
         await client.sendMessage(
             msg.from, 
-            "I'm sorry, I couldn't set your reminder. Please try again with a different phrasing."
+            "抱歉，我无法设置您的提醒。请尝试使用不同的措辞再试一次。"
         );
     }
 }
@@ -68,24 +68,24 @@ async function handleListRemindersCommand(client, msg, userId) {
         const reminders = await reminderService.getUserReminders(userId);
         
         if (!reminders || reminders.length === 0) {
-            await client.sendMessage(msg.from, "You don't have any active reminders.");
+            await client.sendMessage(msg.from, "您没有激活的提醒。");
             return;
         }
         
         // Format reminders list
-        let responseText = "*Your Active Reminders*\n\n";
+        let responseText = "*您已激活的提醒有：*\n\n";
         
         for (const reminder of reminders) {
             const reminderTime = new Date(reminder.time);
             const timeString = reminderTime.toLocaleString();
             const timeFromNow = getRelativeTimeString(reminderTime);
             
-            responseText += `*ID: ${reminder.id}*\n`;
+            responseText += `*编号： ${reminder.id}*\n`;
             responseText += `${reminder.content}\n`;
-            responseText += `Time: ${timeString} (${timeFromNow})\n\n`;
+            responseText += `时间： ${timeString} (${timeFromNow})\n\n`;
         }
         
-        responseText += `To remove a reminder, use: ${config.COMMANDS.prefix}${config.COMMANDS.removeReminder} <id>`;
+        responseText += `要删除提醒，使用 ${config.COMMANDS.prefix}${config.COMMANDS.removeReminder} <id>`;
         
         await client.sendMessage(msg.from, responseText);
         logger.debug(`Listed ${reminders.length} reminders for user ${userId}`);
@@ -93,7 +93,7 @@ async function handleListRemindersCommand(client, msg, userId) {
         logger.error(`Error handling list reminders command: ${error.message}`, { error });
         await client.sendMessage(
             msg.from, 
-            "I'm sorry, I couldn't retrieve your reminders at this time."
+            "抱歉，我暂时无法获取您的提醒事项。"
         );
     }
 }
@@ -104,7 +104,7 @@ async function handleRemoveReminderCommand(client, msg, userId, reminderId) {
         if (!reminderId) {
             await client.sendMessage(
                 msg.from, 
-                `Please specify the reminder ID to remove. Example: ${config.COMMANDS.prefix}${config.COMMANDS.removeReminder} 123`
+                `请指定要删除提醒的编号，例如： ${config.COMMANDS.prefix}${config.COMMANDS.removeReminder} 123`
             );
             return;
         }
@@ -113,12 +113,12 @@ async function handleRemoveReminderCommand(client, msg, userId, reminderId) {
         const reminder = await reminderService.getReminderById(reminderId);
         
         if (!reminder) {
-            await client.sendMessage(msg.from, `No reminder found with ID: ${reminderId}`);
+            await client.sendMessage(msg.from, `找不到该编号的提醒： ${reminderId}`);
             return;
         }
         
         if (reminder.userId !== userId) {
-            await client.sendMessage(msg.from, "You don't have permission to remove this reminder.");
+            await client.sendMessage(msg.from, "您没有权限删除这个提醒。");
             return;
         }
         
@@ -129,13 +129,13 @@ async function handleRemoveReminderCommand(client, msg, userId, reminderId) {
             throw new Error("Failed to remove reminder");
         }
         
-        await client.sendMessage(msg.from, `✅ Reminder with ID ${reminderId} has been removed.`);
+        await client.sendMessage(msg.from, `✅ 编号为 ${reminderId} 的提醒已删除。`);
         logger.debug(`Removed reminder ${reminderId} for user ${userId}`);
     } catch (error) {
         logger.error(`Error handling remove reminder command: ${error.message}`, { error });
         await client.sendMessage(
             msg.from, 
-            "I'm sorry, I couldn't remove the reminder. Please check the ID and try again."
+            "对不起，我无法删除提醒。请检查编号并重试。"
         );
     }
 }

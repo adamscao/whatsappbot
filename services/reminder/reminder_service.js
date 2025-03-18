@@ -114,7 +114,7 @@ async function sendReminderNotification(client, reminder) {
         }
         
         const chatId = reminder.chat_id;
-        const prefix = config.REMINDERS.defaultReminderPrefix || '⏰ Reminder: ';
+        const prefix = config.REMINDERS.defaultReminderPrefix || '⏰ 提醒: ';
         const message = `${prefix}${reminder.content}`;
         
         // Send notification

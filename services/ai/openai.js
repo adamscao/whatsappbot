@@ -127,10 +127,17 @@ async function translateText(text, sourceLanguage, targetLanguage) {
 // Preprocess reminder to extract time and content
 async function preprocessReminder(reminderText) {
     try {
+        // Get current date and time for context
+        const now = new Date();
+        const currentTimeISO = now.toISOString();
+        const currentTimeFormatted = now.toString();
+        
+        logger.debug(`Processing reminder text with current time: ${currentTimeFormatted}`);
+        
         const messages = [
             {
                 role: 'system',
-                content: `Extract time and content from reminder text. Return a JSON object with keys: "time" (ISO 8601 format with timezone if specified, otherwise UTC), "content" (the reminder message), and "relativeTime" (human readable relative time). Example: {"time": "2023-05-20T15:30:00Z", "content": "Call John", "relativeTime": "tomorrow at 3:30 PM"}`
+                content: `Extract time and content from reminder text. The current time is ${currentTimeFormatted} (ISO: ${currentTimeISO}). Return a JSON object with keys: "time" (ISO 8601 format with timezone if specified, otherwise UTC), "content" (the reminder message), and "relativeTime" (human readable relative time). Example: {"time": "2023-05-20T15:30:00Z", "content": "Call John", "relativeTime": "tomorrow at 3:30 PM"}`
             },
             {
                 role: 'user',
@@ -150,7 +157,9 @@ async function preprocessReminder(reminderText) {
         }
         
         try {
-            return JSON.parse(response.choices[0].message.content);
+            const result = JSON.parse(response.choices[0].message.content);
+            logger.debug(`Extracted reminder data: ${JSON.stringify(result)}`);
+            return result;
         } catch (jsonError) {
             logger.error(`Error parsing reminder JSON: ${jsonError.message}`);
             throw new Error('Failed to parse reminder data');
