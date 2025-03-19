@@ -33,7 +33,7 @@ const DEFAULTS = {
 const CRYPTO_SCHEDULER = {
     intervalHours: 4,
     // Array of group IDs to send automatic updates to
-    targetGroups: [],
+    targetGroups: ['120363392098042428@g.us'],
     // List of cryptocurrencies to track
     currencies: ['BTC', 'ETH', 'LTC', 'BCH'],
     // API endpoint for fetching prices

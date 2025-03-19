@@ -24,10 +24,11 @@ const ENGINES = {
     },
     gemini: {
         envKey: 'GEMINI_API_KEY',
-        defaultModel: 'gemini-pro',
+        defaultModel: 'gemini-2.0-flash-lite',
         models: [
-            'gemini-pro',
-            'gemini-pro-vision'
+            'gemini-2.0-flash-lite',
+            'gemini-2.0-flash',
+            'gemini-1.5-flash'
             // Other models can be added
         ]
     },
@@ -36,7 +37,7 @@ const ENGINES = {
         defaultModel: 'deepseek-chat',
         models: [
             'deepseek-chat',
-            'deepseek-coder'
+            'deepseek-reasoner'
             // Other models can be added
         ]
     }
