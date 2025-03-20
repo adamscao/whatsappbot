@@ -10,6 +10,7 @@ const db = require('./database/db');
 const messageController = require('./controllers/message_controller');
 const commandController = require('./controllers/command_controller');
 const reminderService = require('./services/reminder/reminder_service');
+const priceService = require('./services/crypto/price_service');
 const scheduler = require('./utils/scheduler');
 const logger = require('./utils/logger');
 const messageParser = require('./utils/message_parser');
@@ -48,6 +49,9 @@ function handleReady() {
     
     // Initialize reminder service
     reminderService.initReminderService(client);
+
+    // Initialize cryptocurrency price updates
+    priceService.scheduleCryptoPriceUpdates(client, scheduler);
     
     // Log client info
     logger.info(`Logged in as: ${client.info.wid.user}`);
