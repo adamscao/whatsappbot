@@ -11,13 +11,6 @@ function removeBotMention(message, botNumber) {
     const mentionFormats = [
         `@${botNumber}`,
         `@bot`,
-        'hey bot',
-        'bot,',
-        'bot:',
-        'bot ',
-        'ai,',
-        'ai:',
-        'ai ',
         'ai bot'
     ];
     
@@ -133,9 +126,7 @@ function isBotMentioned(msg, botId) {
     
     // Check common ways of addressing the bot
     const botIndicators = [
-        '@bot', 'hey bot', 'bot,', 'bot:', 'dear bot',
-        'ai,', 'ai:', 'ai bot', 'assistant',
-        'gpt', 'claude', 'gemini'
+        '@bot', 'hey bot'
     ];
     
     const lowerCaseBody = msg.body.toLowerCase();
