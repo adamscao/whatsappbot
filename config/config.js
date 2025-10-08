@@ -40,6 +40,24 @@ const CRYPTO_SCHEDULER = {
     apiEndpoint: 'https://api.coingecko.com/api/v3/simple/price'
 };
 
+// Group whitelist configuration - groups where bot responds without @mention
+const GROUP_WHITELIST = {
+    enabled: true,
+    // Groups where bot responds to all messages (no @mention required)
+    groups: [
+        '120363392098042428@g.us' // Main group
+    ]
+};
+
+// Bot IDs configuration - multiple IDs the bot may have
+const BOT_IDS = {
+    // Bot can have multiple IDs in WhatsApp
+    ids: [
+        '8618980575100',    // Primary phone number
+        '5712893722756'     // Linked ID (lid)
+    ]
+};
+
 // Message storage configuration
 const MESSAGE_STORAGE = {
     // Maximum number of messages to store for context
@@ -79,6 +97,8 @@ module.exports = {
     COMMANDS,
     DEFAULTS,
     CRYPTO_SCHEDULER,
+    GROUP_WHITELIST,
+    BOT_IDS,
     MESSAGE_STORAGE,
     SEARCH,
     REMINDERS,

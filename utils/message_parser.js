@@ -119,27 +119,22 @@ function extractCommand(msg, prefix = '$') {
 }
 
 // Check if the bot is mentioned in a message
-function isBotMentioned(msg, botId) {
+function isBotMentioned(msg, botId, additionalBotIds = []) {
     if (!msg || !msg.body) return false;
 
     // Extract bot number from botId (handles both formats)
     // botId can be "15147715108@c.us" or "15147715108"
     const botNumber = botId.includes('@') ? botId.split('@')[0] : botId;
 
-    // Debug: log mentionedIds
-    if (msg.mentionedIds && msg.mentionedIds.length > 0) {
-        console.log(`[DEBUG] mentionedIds:`, msg.mentionedIds);
-        console.log(`[DEBUG] botId:`, botId);
-        console.log(`[DEBUG] botNumber:`, botNumber);
-    }
+    // Create a list of all bot numbers to check
+    const allBotNumbers = [botNumber, ...additionalBotIds];
 
     // Check if message mentions the bot by @mentioning its number
     if (msg.mentionedIds && msg.mentionedIds.length > 0) {
-        // Check if any mentioned ID matches the bot number
+        // Check if any mentioned ID matches any of the bot numbers
         const isMentioned = msg.mentionedIds.some(mentionId => {
             const mentionNumber = mentionId.includes('@') ? mentionId.split('@')[0] : mentionId;
-            console.log(`[DEBUG] Comparing mentionNumber: ${mentionNumber} with botNumber: ${botNumber}`);
-            return mentionNumber === botNumber;
+            return allBotNumbers.some(botNum => mentionNumber === botNum);
         });
 
         if (isMentioned) return true;
@@ -149,7 +144,7 @@ function isBotMentioned(msg, botId) {
     const botIndicators = [
         '@bot',
         'hey bot',
-        `@${botNumber}` // Also check for @number format in message body
+        ...allBotNumbers.map(num => `@${num}`) // Check all bot numbers in message body
     ];
 
     const lowerCaseBody = msg.body.toLowerCase();

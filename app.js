@@ -94,18 +94,28 @@ async function handleMessage(message) {
         
         // Determine if it's a group chat
         const isGroup = messageParser.isGroupMessage(message);
-        
-        // For group chats, check if bot is mentioned
+
+        // For group chats, check if bot is mentioned or group is whitelisted
         if (isGroup) {
-            const isMentioned = messageParser.isBotMentioned(message, client.info.wid._serialized);
-            
-            // Skip if not mentioned in a group chat
-            if (!isMentioned) {
-                logger.debug('Message in group but bot not mentioned, ignoring');
+            const isWhitelisted = config.GROUP_WHITELIST.enabled &&
+                                  config.GROUP_WHITELIST.groups.includes(message.from);
+            const isMentioned = messageParser.isBotMentioned(
+                message,
+                client.info.wid._serialized,
+                config.BOT_IDS.ids
+            );
+
+            // Skip if not mentioned and not in whitelist
+            if (!isMentioned && !isWhitelisted) {
+                logger.debug('Message in group but bot not mentioned and not whitelisted, ignoring');
                 return;
             }
-            
-            logger.debug('Bot mentioned in group chat, processing message');
+
+            if (isMentioned) {
+                logger.debug('Bot mentioned in group chat, processing message');
+            } else if (isWhitelisted) {
+                logger.debug('Message in whitelisted group, processing message');
+            }
         }
         
         // Remove bot mention regardless of whether it's a group or private chat
