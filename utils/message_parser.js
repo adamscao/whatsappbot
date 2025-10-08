@@ -2,7 +2,7 @@
 // Utility for parsing WhatsApp messages
 
 // Remove bot mention from message
-function removeBotMention(message, botNumber) {
+function removeBotMention(message, botNumber, additionalBotIds = []) {
     if (!message || !botNumber) {
         return message;
     }
@@ -10,18 +10,23 @@ function removeBotMention(message, botNumber) {
     // Extract just the number if botNumber includes @ suffix
     const cleanBotNumber = botNumber.includes('@') ? botNumber.split('@')[0] : botNumber;
 
-    // Get bot mention formats
+    // Create list of all bot numbers
+    const allBotNumbers = [cleanBotNumber, ...additionalBotIds];
+
+    // Get bot mention formats for all bot IDs
     const mentionFormats = [
-        `@${cleanBotNumber}`,
-        `@bot`,
-        'hey bot'
+        '@bot',
+        'hey bot',
+        ...allBotNumbers.map(num => `@${num}`)
     ];
 
     let processedMessage = message;
 
     // Remove bot mentions at the beginning of the message
     for (const mention of mentionFormats) {
-        const regex = new RegExp(`^\\s*${mention}\\s*`, 'i');
+        // Escape special regex characters in the mention
+        const escapedMention = mention.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(`^\\s*${escapedMention}\\s*`, 'i');
         processedMessage = processedMessage.replace(regex, '');
     }
 

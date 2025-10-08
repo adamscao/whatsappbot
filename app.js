@@ -119,7 +119,11 @@ async function handleMessage(message) {
         }
         
         // Remove bot mention regardless of whether it's a group or private chat
-        const processedBody = messageParser.removeBotMention(message.body, client.info.wid.user);
+        const processedBody = messageParser.removeBotMention(
+            message.body,
+            client.info.wid.user,
+            config.BOT_IDS.ids
+        );
         
         // Create a processed message object with the modified body
         const processedMessage = {...message, body: processedBody};
