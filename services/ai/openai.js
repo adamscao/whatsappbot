@@ -47,18 +47,15 @@ async function sendMessage(message, messageHistory, model = 'gpt-4o') {
     try {
         logger.debug(`Sending message to OpenAI using model: ${model}`);
 
-        // Check if we have any system messages with search results
-        let hasSearchResults = false;
+        // Check if the current message contains search results
+        const hasSearchResults = message.includes('=== SEARCH RESULTS') &&
+                                 message.includes('=== INSTRUCTIONS ===');
+
         let requestMessages = [];
 
         // Format messages - maintain all existing message history
         for (const msg of messageHistory) {
             requestMessages.push(msg);
-            if (msg.role === 'system' &&
-                msg.content.includes('search results') &&
-                msg.content.includes('Source:')) {
-                hasSearchResults = true;
-            }
         }
 
         // Add the current user message

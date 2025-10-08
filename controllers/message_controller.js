@@ -96,15 +96,32 @@ async function processAIResponse(client, msg, userId, chatId, isGroup) {
                 }
             }
 
-            // Format search results in a structured way that will help the AI
-            augmentedMessage = `${translatedQueryForAI}\n\n### Search Results\n\n`;
+            // Format search results with better structure and instructions
+            // Use up to 5 results instead of 3 for better coverage
+            const numResults = Math.min(searchResults.length, 5);
 
-            for (let i = 0; i < Math.min(searchResults.length, 3); i++) {
+            augmentedMessage = `User Question: ${translatedQueryForAI}\n\n`;
+            augmentedMessage += `=== SEARCH RESULTS (${numResults} sources) ===\n\n`;
+
+            for (let i = 0; i < numResults; i++) {
                 const result = searchResults[i];
-                augmentedMessage += `[${i + 1}] ${result.title}\n${result.snippet}\nSource: ${result.link}\n\n`;
+                augmentedMessage += `Source ${i + 1}:\n`;
+                augmentedMessage += `Title: ${result.title}\n`;
+                augmentedMessage += `URL: ${result.link}\n`;
+                augmentedMessage += `Content: ${result.snippet}\n`;
+                augmentedMessage += `---\n\n`;
             }
 
-            augmentedMessage += `\nPlease use these search results to help answer the question: "${translatedQueryForAI}"\n`;
+            augmentedMessage += `=== INSTRUCTIONS ===\n`;
+            augmentedMessage += `Based on the search results above, please provide a comprehensive and accurate answer to the user's question.\n\n`;
+            augmentedMessage += `Guidelines:\n`;
+            augmentedMessage += `1. Synthesize information from multiple sources when relevant\n`;
+            augmentedMessage += `2. Cite sources by their number (e.g., "According to Source 1...")\n`;
+            augmentedMessage += `3. If sources conflict, acknowledge different perspectives\n`;
+            augmentedMessage += `4. Focus on answering the specific question asked\n`;
+            augmentedMessage += `5. Be concise but thorough - aim for clarity over length\n`;
+            augmentedMessage += `6. If the search results don't fully answer the question, acknowledge what's missing\n\n`;
+            augmentedMessage += `Question: ${translatedQueryForAI}`;
         }
 
         // Send to AI service
