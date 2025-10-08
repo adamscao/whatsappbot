@@ -46,44 +46,56 @@ function formatMessages(message, messageHistory) {
 async function sendMessage(message, messageHistory, model = 'gpt-4o') {
     try {
         logger.debug(`Sending message to OpenAI using model: ${model}`);
-        
+
         // Check if we have any system messages with search results
         let hasSearchResults = false;
         let requestMessages = [];
-        
+
         // Format messages - maintain all existing message history
         for (const msg of messageHistory) {
             requestMessages.push(msg);
-            if (msg.role === 'system' && 
-                msg.content.includes('search results') && 
+            if (msg.role === 'system' &&
+                msg.content.includes('search results') &&
                 msg.content.includes('Source:')) {
                 hasSearchResults = true;
             }
         }
-        
+
         // Add the current user message
         requestMessages.push({
             role: 'user',
             content: message
         });
-        
-        // If we have search results, adjust temperature to be more factual
-        const temperature = hasSearchResults ? 0.3 : 0.7;
-        
-        const response = await openai.chat.completions.create({
+
+        // GPT-5 and o1 models use max_completion_tokens, older models use max_tokens
+        const isGPT5orO1 = model.startsWith('gpt-5') || model.startsWith('o1');
+
+        const requestParams = {
             model: model,
-            messages: requestMessages,
-            temperature: temperature,
-            max_tokens: 1000,
-            top_p: 1,
-            frequency_penalty: 0,
-            presence_penalty: 0
-        });
-        
+            messages: requestMessages
+        };
+
+        // GPT-5 and o1 models have different parameter requirements
+        if (isGPT5orO1) {
+            requestParams.max_completion_tokens = 1000;
+            // GPT-5 and o1 only support temperature: 1 (default)
+            // Don't set temperature, top_p, frequency_penalty, presence_penalty
+        } else {
+            // For GPT-4 and earlier models
+            const temperature = hasSearchResults ? 0.3 : 0.7;
+            requestParams.temperature = temperature;
+            requestParams.max_tokens = 1000;
+            requestParams.top_p = 1;
+            requestParams.frequency_penalty = 0;
+            requestParams.presence_penalty = 0;
+        }
+
+        const response = await openai.chat.completions.create(requestParams);
+
         if (!response.choices || response.choices.length === 0) {
             throw new Error('No response from OpenAI');
         }
-        
+
         return response.choices[0].message.content;
     } catch (error) {
         logger.error(`Error in OpenAI sendMessage: ${error.message}`, { error });
@@ -109,7 +121,7 @@ async function translateText(text, sourceLanguage, targetLanguage) {
             model: 'gpt-4o-mini', // Using cheaper model for translations
             messages: messages,
             temperature: 0.3, // Lower temperature for more consistent translations
-            max_tokens: 1000,
+            max_tokens: 1000, // gpt-4o-mini still uses max_tokens
             top_p: 1
         });
         
