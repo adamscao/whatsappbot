@@ -42,10 +42,10 @@ const CRYPTO_SCHEDULER = {
 
 // Group whitelist configuration - groups where bot responds without @mention
 const GROUP_WHITELIST = {
-    enabled: true,
+    enabled: false,  // Disabled - require @mention in all groups
     // Groups where bot responds to all messages (no @mention required)
     groups: [
-        '120363392098042428@g.us' // Main group
+        // '120363392098042428@g.us' // Main group (commented out)
     ]
 };
 
