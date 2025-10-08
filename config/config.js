@@ -25,7 +25,7 @@ const COMMANDS = {
 // Default settings
 const DEFAULTS = {
     engine: 'openai',
-    model: 'gpt-4o',
+    model: 'gpt-5',
     systemPrompt: 'You are a helpful assistant integrated into WhatsApp. Answer questions concisely and accurately.'
 };
 

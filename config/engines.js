@@ -5,8 +5,11 @@
 const ENGINES = {
     openai: {
         envKey: 'OPENAI_API_KEY',
-        defaultModel: 'gpt-4o',
+        defaultModel: 'gpt-5',
         models: [
+            'gpt-5',
+            'gpt-5-mini',
+            'gpt-5-nano',
             'gpt-4o',
             'gpt-4o-mini',
             'o1',
