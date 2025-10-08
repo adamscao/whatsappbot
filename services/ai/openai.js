@@ -77,14 +77,15 @@ async function sendMessage(message, messageHistory, model = 'gpt-4o') {
 
         // GPT-5 and o1 models have different parameter requirements
         if (isGPT5orO1) {
-            requestParams.max_completion_tokens = 1000;
+            // Increase token limit for search results context
+            requestParams.max_completion_tokens = hasSearchResults ? 4000 : 2000;
             // GPT-5 and o1 only support temperature: 1 (default)
             // Don't set temperature, top_p, frequency_penalty, presence_penalty
         } else {
             // For GPT-4 and earlier models
             const temperature = hasSearchResults ? 0.3 : 0.7;
             requestParams.temperature = temperature;
-            requestParams.max_tokens = 1000;
+            requestParams.max_tokens = hasSearchResults ? 2000 : 1000;
             requestParams.top_p = 1;
             requestParams.frequency_penalty = 0;
             requestParams.presence_penalty = 0;
@@ -123,13 +124,11 @@ async function translateText(text, sourceLanguage, targetLanguage) {
                 content: text
             }
         ];
-        
+
         const response = await openai.chat.completions.create({
-            model: 'gpt-4o-mini', // Using cheaper model for translations
+            model: 'gpt-5-mini', // Using gpt-5-mini for translations
             messages: messages,
-            temperature: 0.3, // Lower temperature for more consistent translations
-            max_tokens: 1000, // gpt-4o-mini still uses max_tokens
-            top_p: 1
+            max_completion_tokens: 2000 // gpt-5-mini uses max_completion_tokens
         });
         
         if (!response.choices || response.choices.length === 0) {
