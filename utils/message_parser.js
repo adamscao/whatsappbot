@@ -6,23 +6,25 @@ function removeBotMention(message, botNumber) {
     if (!message || !botNumber) {
         return message;
     }
-    
+
+    // Extract just the number if botNumber includes @ suffix
+    const cleanBotNumber = botNumber.includes('@') ? botNumber.split('@')[0] : botNumber;
+
     // Get bot mention formats
     const mentionFormats = [
-        `@${botNumber}`,
-	`@5712893722756`, //Ugly patch temporary
+        `@${cleanBotNumber}`,
         `@bot`,
         'hey bot'
     ];
-    
+
     let processedMessage = message;
-    
+
     // Remove bot mentions at the beginning of the message
     for (const mention of mentionFormats) {
         const regex = new RegExp(`^\\s*${mention}\\s*`, 'i');
         processedMessage = processedMessage.replace(regex, '');
     }
-    
+
     return processedMessage.trim();
 }
 
@@ -119,23 +121,31 @@ function extractCommand(msg, prefix = '$') {
 // Check if the bot is mentioned in a message
 function isBotMentioned(msg, botId) {
     if (!msg || !msg.body) return false;
-    
+
+    // Extract bot number from botId (handles both formats)
+    // botId can be "15147715108@c.us" or "15147715108"
+    const botNumber = botId.includes('@') ? botId.split('@')[0] : botId;
+
     // Check if message mentions the bot by @mentioning its number
-    if (msg.mentionedIds && msg.mentionedIds.includes(botId)) {
-        return true;
+    if (msg.mentionedIds && msg.mentionedIds.length > 0) {
+        // Check if any mentioned ID matches the bot number
+        const isMentioned = msg.mentionedIds.some(mentionId => {
+            const mentionNumber = mentionId.includes('@') ? mentionId.split('@')[0] : mentionId;
+            return mentionNumber === botNumber;
+        });
+
+        if (isMentioned) return true;
     }
-    // Ugly patch temperory
-//    if (botId = '5712893722756') {
-//        return true;
-//    }
-    
+
     // Check common ways of addressing the bot
     const botIndicators = [
-        '@bot', 'hey bot'
+        '@bot',
+        'hey bot',
+        `@${botNumber}` // Also check for @number format in message body
     ];
-    
+
     const lowerCaseBody = msg.body.toLowerCase();
-    return botIndicators.some(indicator => lowerCaseBody.includes(indicator));
+    return botIndicators.some(indicator => lowerCaseBody.includes(indicator.toLowerCase()));
 }
 
 module.exports = {
