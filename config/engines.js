@@ -9,27 +9,31 @@ const ENGINES = {
         models: [
             'gpt-4o',
             'gpt-4o-mini',
-            'o1-mini'
+            'o1',
+            'o1-mini',
+            'o1-preview'
         ]
     },
     anthropic: {
         envKey: 'ANTHROPIC_API_KEY',
-        defaultModel: 'claude-3-opus',
+        defaultModel: 'claude-sonnet-4-20250514',
         models: [
-            'claude-3-opus',
-            'claude-3-sonnet',
-            'claude-3-haiku'
-            // Other models can be added
+            'claude-sonnet-4-20250514',
+            'claude-opus-4-20250514',
+            'claude-3-5-sonnet-20241022',
+            'claude-3-5-haiku-20241022',
+            'claude-3-opus-20240229'
         ]
     },
     gemini: {
         envKey: 'GEMINI_API_KEY',
-        defaultModel: 'gemini-2.0-flash-lite',
+        defaultModel: 'gemini-2.0-flash-exp',
         models: [
-            'gemini-2.0-flash-lite',
-            'gemini-2.0-flash',
+            'gemini-2.0-flash-exp',
+            'gemini-2.0-flash-thinking-exp-01-21',
+            'gemini-exp-1206',
+            'gemini-1.5-pro-latest',
             'gemini-1.5-flash'
-            // Other models can be added
         ]
     },
     deepseek: {
@@ -38,7 +42,6 @@ const ENGINES = {
         models: [
             'deepseek-chat',
             'deepseek-reasoner'
-            // Other models can be added
         ]
     }
 };

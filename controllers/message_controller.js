@@ -40,8 +40,7 @@ async function processAIResponse(client, msg, userId, chatId, isGroup) {
     try {
         // Send typing indicator
         await client.sendPresenceAvailable();
-        await client.sendMessage(chatId, { presenceState: 'typing' });
-        
+
         // Get message history for context
         const messageHistory = await getMessageHistory(chatId, userId);
         
@@ -102,11 +101,12 @@ async function processAIResponse(client, msg, userId, chatId, isGroup) {
             aiResponse = "I'm sorry, I encountered an error processing your request. Please try again later.";
         }
 
-        // Send the response
-        await client.sendMessage(chatId, aiResponse);
-        
+        // Send the response - ensure aiResponse is a string
+        const responseText = String(aiResponse || "I'm sorry, I couldn't generate a response.");
+        await client.sendMessage(chatId, responseText);
+
         // Save AI response to database
-        await saveMessageToDatabase(msg, chatId, aiResponse, 'assistant');
+        await saveMessageToDatabase(msg, chatId, responseText, 'assistant');
         
         logger.debug(`Sent AI response to ${chatId}`);
     } catch (error) {

@@ -10,8 +10,9 @@ function removeBotMention(message, botNumber) {
     // Get bot mention formats
     const mentionFormats = [
         `@${botNumber}`,
+	`@5712893722756`, //Ugly patch temporary
         `@bot`,
-        'ai bot'
+        'hey bot'
     ];
     
     let processedMessage = message;
@@ -123,6 +124,10 @@ function isBotMentioned(msg, botId) {
     if (msg.mentionedIds && msg.mentionedIds.includes(botId)) {
         return true;
     }
+    // Ugly patch temperory
+//    if (botId = '5712893722756') {
+//        return true;
+//    }
     
     // Check common ways of addressing the bot
     const botIndicators = [

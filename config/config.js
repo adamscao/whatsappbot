@@ -67,7 +67,7 @@ const REMINDERS = {
 
 // Logging configuration
 const LOGGING = {
-    level: process.env.LOG_LEVEL || 'info', // debug, info, warn, error
+    level: process.env.LOG_LEVEL || 'debug', // debug, info, warn, error
     file: './logs/whatsapp-bot.log',
     console: true,
     maxFiles: 5,

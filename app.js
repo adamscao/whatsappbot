@@ -21,7 +21,7 @@ const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
         headless: true,
-        executablePath: '/usr/bin/chromium',
+        executablePath: '/snap/bin/chromium',
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
@@ -29,10 +29,14 @@ const client = new Client({
             '--disable-accelerated-2d-canvas',
             '--no-first-run',
             '--no-zygote',
-            '--disable-gpu'
+            '--disable-gpu',
+            '--disable-features=IsolateOrigins,site-per-process'
         ]
     }
 });
+
+// Flag to prevent duplicate initialization
+let isInitialized = false;
 
 // QR code generation event handler
 function handleQRCode(qr) {
@@ -42,27 +46,50 @@ function handleQRCode(qr) {
 
 // Ready event handler
 function handleReady() {
+    // Prevent duplicate initialization
+    if (isInitialized) {
+        logger.debug('Client already initialized, skipping duplicate ready event');
+        return;
+    }
+
     logger.info('WhatsApp client is ready');
-    
+
+    // Test if client can receive messages
+    logger.debug('Message handler registered, waiting for messages...');
+
     // Initialize scheduled tasks
     scheduler.initScheduler();
-    
+
     // Initialize reminder service
     reminderService.initReminderService(client);
 
     // Initialize cryptocurrency price updates
     priceService.scheduleCryptoPriceUpdates(client, scheduler);
-    
+
     // Log client info
     logger.info(`Logged in as: ${client.info.wid.user}`);
+
+    // Mark as initialized
+    isInitialized = true;
 }
 
 // Message event handler
 async function handleMessage(message) {
     try {
+        logger.debug(`[MESSAGE EVENT FIRED] From: ${message.from}, IsStatus: ${message.isStatus}, Body: ${message.body ? message.body.substring(0, 50) : 'no body'}`);
+
         // Skip status messages
-        if (message.isStatus) return;
-        
+        if (message.isStatus) {
+            logger.debug('Skipping status message');
+            return;
+        }
+
+        // Skip messages from self
+        if (message.fromMe) {
+            logger.debug('Skipping message from self');
+            return;
+        }
+
         logger.debug(`Received message from ${message.from}: ${message.body}`);
         
         // Determine if it's a group chat
@@ -112,6 +139,17 @@ function handleAuthFailure(error) {
     process.exit(1);
 }
 
+// Disconnection handler
+function handleDisconnected(reason) {
+    logger.warn('WhatsApp client disconnected', { reason });
+    isInitialized = false;
+}
+
+// Loading screen handler
+function handleLoadingScreen(percent, message) {
+    logger.debug(`Loading: ${percent}% - ${message}`);
+}
+
 // Initialize application
 async function initializeApp() {
     try {
@@ -124,6 +162,8 @@ async function initializeApp() {
         client.on('ready', handleReady);
         client.on('message', handleMessage);
         client.on('auth_failure', handleAuthFailure);
+        client.on('disconnected', handleDisconnected);
+        client.on('loading_screen', handleLoadingScreen);
         
         // Start WhatsApp client
         logger.info('Starting WhatsApp client...');
@@ -142,5 +182,20 @@ function main() {
     logger.info('Starting WhatsApp bot...');
     initializeApp();
 }
+
+// Global error handlers to prevent crashes
+process.on('unhandledRejection', (reason, promise) => {
+    logger.error('Unhandled Rejection:', {
+        reason: reason ? reason.toString() : 'Unknown',
+        stack: reason && reason.stack ? reason.stack : 'No stack trace'
+    });
+});
+
+process.on('uncaughtException', (error) => {
+    logger.error('Uncaught Exception:', {
+        error: error.message,
+        stack: error.stack
+    });
+});
 
 main();

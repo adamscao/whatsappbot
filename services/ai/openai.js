@@ -185,7 +185,7 @@ async function needsSearchAugmentation(query) {
         ];
         
         const response = await openai.chat.completions.create({
-            model: 'gpt-4o-mini', // Using cheaper model
+            model: 'gpt-4o',
             messages: messages,
             temperature: 0.1,
             response_format: { type: "json_object" }
