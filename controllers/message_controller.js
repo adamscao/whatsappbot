@@ -80,6 +80,9 @@ async function processAIResponse(client, msg, userId, chatId, isGroup) {
         if (searchResults && searchResults.length > 0) {
             logger.debug(`Adding ${searchResults.length} search results to AI context`);
 
+            // Detect if the original question is in Chinese
+            const isChinese = /[\u4e00-\u9fa5]/.test(messageText);
+
             // Format search results in a structured way that will help the AI
             augmentedMessage = `${messageText}\n\n### Search Results\n\n`;
 
@@ -88,7 +91,12 @@ async function processAIResponse(client, msg, userId, chatId, isGroup) {
                 augmentedMessage += `[${i + 1}] ${result.title}\n${result.snippet}\nSource: ${result.link}\n\n`;
             }
 
-            augmentedMessage += `\nPlease use these search results to help answer the question: "${messageText}"\n`;
+            // Add instruction to answer in the same language as the question
+            if (isChinese) {
+                augmentedMessage += `\n请使用以上搜索结果来回答问题："${messageText}"。请用中文回答。\n`;
+            } else {
+                augmentedMessage += `\nPlease use these search results to help answer the question: "${messageText}"\n`;
+            }
         }
 
         // Send to AI service

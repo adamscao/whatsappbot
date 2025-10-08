@@ -96,7 +96,14 @@ async function sendMessage(message, messageHistory, model = 'gpt-4o') {
             throw new Error('No response from OpenAI');
         }
 
-        return response.choices[0].message.content;
+        const content = response.choices[0].message.content;
+
+        // Log if content is empty
+        if (!content || content.trim() === '') {
+            logger.warn(`Empty response from OpenAI model ${model}, finish_reason: ${response.choices[0].finish_reason}`);
+        }
+
+        return content;
     } catch (error) {
         logger.error(`Error in OpenAI sendMessage: ${error.message}`, { error });
         throw error;
