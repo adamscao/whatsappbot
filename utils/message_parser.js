@@ -126,11 +126,19 @@ function isBotMentioned(msg, botId) {
     // botId can be "15147715108@c.us" or "15147715108"
     const botNumber = botId.includes('@') ? botId.split('@')[0] : botId;
 
+    // Debug: log mentionedIds
+    if (msg.mentionedIds && msg.mentionedIds.length > 0) {
+        console.log(`[DEBUG] mentionedIds:`, msg.mentionedIds);
+        console.log(`[DEBUG] botId:`, botId);
+        console.log(`[DEBUG] botNumber:`, botNumber);
+    }
+
     // Check if message mentions the bot by @mentioning its number
     if (msg.mentionedIds && msg.mentionedIds.length > 0) {
         // Check if any mentioned ID matches the bot number
         const isMentioned = msg.mentionedIds.some(mentionId => {
             const mentionNumber = mentionId.includes('@') ? mentionId.split('@')[0] : mentionId;
+            console.log(`[DEBUG] Comparing mentionNumber: ${mentionNumber} with botNumber: ${botNumber}`);
             return mentionNumber === botNumber;
         });
 
