@@ -65,7 +65,9 @@ async function sendMessage(message, messageHistory, model = 'gpt-4o') {
         });
 
         // GPT-5 and o1 models use max_completion_tokens, older models use max_tokens
-        const isGPT5orO1 = model.startsWith('gpt-5') || model.startsWith('o1');
+        const isGPT5 = model.startsWith('gpt-5');
+        const isO1 = model.startsWith('o1');
+        const isGPT5orO1 = isGPT5 || isO1;
 
         const requestParams = {
             model: model,
@@ -74,8 +76,17 @@ async function sendMessage(message, messageHistory, model = 'gpt-4o') {
 
         // GPT-5 and o1 models have different parameter requirements
         if (isGPT5orO1) {
-            // Increase token limit for search results context
-            requestParams.max_completion_tokens = hasSearchResults ? 4000 : 2000;
+            // GPT-5: 400K context window, 128K max output tokens
+            // o1 models: Different limits
+            if (isGPT5) {
+                // GPT-5 can handle much larger outputs
+                // Use 16K for search results (detailed responses with citations)
+                // Use 8K for regular queries (comprehensive answers)
+                requestParams.max_completion_tokens = hasSearchResults ? 16000 : 8000;
+            } else {
+                // o1 models - use conservative limits
+                requestParams.max_completion_tokens = hasSearchResults ? 4000 : 2000;
+            }
             // GPT-5 and o1 only support temperature: 1 (default)
             // Don't set temperature, top_p, frequency_penalty, presence_penalty
         } else {

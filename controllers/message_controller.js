@@ -97,8 +97,8 @@ async function processAIResponse(client, msg, userId, chatId, isGroup) {
             }
 
             // Format search results with better structure and instructions
-            // Use up to 5 results instead of 3 for better coverage
-            const numResults = Math.min(searchResults.length, 5);
+            // Use up to 8 results to leverage GPT-5's 400K context window
+            const numResults = Math.min(searchResults.length, 8);
 
             augmentedMessage = `User Question: ${translatedQueryForAI}\n\n`;
             augmentedMessage += `=== SEARCH RESULTS (${numResults} sources) ===\n\n`;

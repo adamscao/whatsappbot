@@ -61,7 +61,8 @@ const BOT_IDS = {
 // Message storage configuration
 const MESSAGE_STORAGE = {
     // Maximum number of messages to store for context
-    maxContextMessages: 10,
+    // Increased to 30 to leverage GPT-5's 400K context window
+    maxContextMessages: 30,
     // Whether to include system messages in context
     includeSystemMessages: true,
     // Time in hours before context is automatically cleared
@@ -70,7 +71,7 @@ const MESSAGE_STORAGE = {
 
 // Search configuration
 const SEARCH = {
-    maxResults: 5,
+    maxResults: 10,  // Increased from 5 to 10 for GPT-5's larger context
     provider: 'google', // 'google', 'bing', etc.
     timeout: 15000, // timeout in milliseconds
     userAgent: 'WhatsApp Bot Search Service'
