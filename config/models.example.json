@@ -6,12 +6,20 @@
       {
         "id": "gpt-5",
         "name": "GPT-5",
-        "description": "Latest GPT-5 model with improved capabilities"
+        "description": "Latest GPT-5 model with improved capabilities",
+        "enabled": true
       },
       {
         "id": "gpt-5-mini",
         "name": "GPT-5 Mini",
-        "description": "Faster and more cost-effective version of GPT-5"
+        "description": "Faster and more cost-effective version of GPT-5",
+        "enabled": true
+      },
+      {
+        "id": "gpt-4o",
+        "name": "GPT-4o",
+        "description": "Older model - disabled for now",
+        "enabled": false
       }
     ]
   },
@@ -22,7 +30,8 @@
       {
         "id": "claude-sonnet-4-20250514",
         "name": "Claude Sonnet 4",
-        "description": "Balanced performance and cost"
+        "description": "Balanced performance and cost",
+        "enabled": true
       }
     ]
   }

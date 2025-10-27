@@ -19,12 +19,16 @@ try {
 }
 
 // Transform models config to include just model IDs for backward compatibility
+// Filter out disabled models (enabled: false)
 const ENGINES = {};
 for (const [engineName, engineConfig] of Object.entries(MODELS_CONFIG)) {
+    // Filter models to only include enabled ones (default to true if not specified)
+    const enabledModels = engineConfig.models.filter(model => model.enabled !== false);
+
     ENGINES[engineName] = {
         envKey: engineConfig.envKey,
         defaultModel: engineConfig.defaultModel,
-        models: engineConfig.models.map(model => model.id)
+        models: enabledModels.map(model => model.id)
     };
 }
 
@@ -86,7 +90,8 @@ function getModelsWithDetails(engineName) {
         return [];
     }
 
-    return MODELS_CONFIG[engineName].models;
+    // Only return enabled models (default to true if not specified)
+    return MODELS_CONFIG[engineName].models.filter(model => model.enabled !== false);
 }
 
 // Function to get all engines configuration (for listing purposes)

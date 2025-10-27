@@ -6,42 +6,50 @@
       {
         "id": "gpt-5",
         "name": "GPT-5",
-        "description": "Latest GPT-5 model with improved capabilities"
+        "description": "Latest GPT-5 model with improved capabilities",
+        "enabled": true
       },
       {
         "id": "gpt-5-mini",
         "name": "GPT-5 Mini",
-        "description": "Faster and more cost-effective version of GPT-5"
+        "description": "Faster and more cost-effective version of GPT-5",
+        "enabled": true
       },
       {
         "id": "gpt-5-nano",
         "name": "GPT-5 Nano",
-        "description": "Lightweight version of GPT-5"
+        "description": "Lightweight version of GPT-5",
+        "enabled": true
       },
       {
         "id": "gpt-4o",
         "name": "GPT-4o",
-        "description": "Omni model with multimodal capabilities"
+        "description": "Omni model with multimodal capabilities",
+        "enabled": true
       },
       {
         "id": "gpt-4o-mini",
         "name": "GPT-4o Mini",
-        "description": "Compact version of GPT-4o"
+        "description": "Compact version of GPT-4o",
+        "enabled": true
       },
       {
         "id": "o1",
         "name": "O1",
-        "description": "Advanced reasoning model"
+        "description": "Advanced reasoning model",
+        "enabled": true
       },
       {
         "id": "o1-mini",
         "name": "O1 Mini",
-        "description": "Smaller reasoning model"
+        "description": "Smaller reasoning model",
+        "enabled": true
       },
       {
         "id": "o1-preview",
         "name": "O1 Preview",
-        "description": "Preview version of O1 reasoning model"
+        "description": "Preview version of O1 reasoning model",
+        "enabled": false
       }
     ]
   },
@@ -52,27 +60,32 @@
       {
         "id": "claude-sonnet-4-20250514",
         "name": "Claude Sonnet 4",
-        "description": "Balanced performance and cost"
+        "description": "Balanced performance and cost",
+        "enabled": true
       },
       {
         "id": "claude-opus-4-20250514",
         "name": "Claude Opus 4",
-        "description": "Most capable Claude model"
+        "description": "Most capable Claude model",
+        "enabled": true
       },
       {
         "id": "claude-3-5-sonnet-20241022",
         "name": "Claude 3.5 Sonnet",
-        "description": "Previous generation Sonnet model"
+        "description": "Previous generation Sonnet model",
+        "enabled": true
       },
       {
         "id": "claude-3-5-haiku-20241022",
         "name": "Claude 3.5 Haiku",
-        "description": "Fast and efficient model"
+        "description": "Fast and efficient model",
+        "enabled": true
       },
       {
         "id": "claude-3-opus-20240229",
         "name": "Claude 3 Opus",
-        "description": "Claude 3 family's most capable model"
+        "description": "Claude 3 family's most capable model",
+        "enabled": true
       }
     ]
   },
@@ -83,27 +96,32 @@
       {
         "id": "gemini-2.0-flash-exp",
         "name": "Gemini 2.0 Flash (Experimental)",
-        "description": "Latest experimental flash model"
+        "description": "Latest experimental flash model",
+        "enabled": true
       },
       {
         "id": "gemini-2.0-flash-thinking-exp-01-21",
         "name": "Gemini 2.0 Flash Thinking",
-        "description": "Experimental model with enhanced reasoning"
+        "description": "Experimental model with enhanced reasoning",
+        "enabled": false
       },
       {
         "id": "gemini-exp-1206",
         "name": "Gemini Experimental 1206",
-        "description": "Experimental Gemini model"
+        "description": "Experimental Gemini model",
+        "enabled": false
       },
       {
         "id": "gemini-1.5-pro-latest",
         "name": "Gemini 1.5 Pro",
-        "description": "Production-ready Pro model"
+        "description": "Production-ready Pro model",
+        "enabled": true
       },
       {
         "id": "gemini-1.5-flash",
         "name": "Gemini 1.5 Flash",
-        "description": "Fast and efficient model"
+        "description": "Fast and efficient model",
+        "enabled": true
       }
     ]
   },
@@ -114,12 +132,14 @@
       {
         "id": "deepseek-chat",
         "name": "DeepSeek Chat",
-        "description": "General purpose chat model"
+        "description": "General purpose chat model",
+        "enabled": true
       },
       {
         "id": "deepseek-reasoner",
         "name": "DeepSeek Reasoner",
-        "description": "Specialized reasoning model"
+        "description": "Specialized reasoning model",
+        "enabled": true
       }
     ]
   }

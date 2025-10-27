@@ -41,6 +41,9 @@ Each model in the `models` array should have:
 - **`id`**: The exact model identifier as required by the AI provider's API
 - **`name`**: A user-friendly display name for the model
 - **`description`**: A brief description of the model's capabilities or use case
+- **`enabled`**: Boolean flag to enable/disable the model (optional, defaults to `true`)
+  - Set to `false` to temporarily disable a model without removing its configuration
+  - Disabled models will not appear in the list and cannot be selected by users
 
 ## Adding a New Model
 
@@ -54,11 +57,39 @@ To add a new model to an existing engine:
 {
   "id": "new-model-id",
   "name": "New Model Name",
-  "description": "Description of what this model does"
+  "description": "Description of what this model does",
+  "enabled": true
 }
 ```
 
 4. Save the file and restart the bot
+
+## Disabling/Enabling Models
+
+To temporarily disable a model without removing it from the configuration:
+
+1. Open `config/models.json`
+2. Find the model you want to disable
+3. Set `"enabled": false`
+4. Save the file and restart the bot
+
+Example:
+```json
+{
+  "id": "experimental-model",
+  "name": "Experimental Model",
+  "description": "Not ready for production",
+  "enabled": false
+}
+```
+
+Disabled models will:
+- Not appear in the `$list` command output
+- Not be selectable by users
+- Not be validated as available models
+- Still retain their configuration for easy re-enabling
+
+To re-enable a model, simply change `"enabled": false` to `"enabled": true` (or remove the field, as the default is `true`).
 
 ## Adding a New AI Engine
 
@@ -76,7 +107,8 @@ To add a completely new AI engine:
       {
         "id": "model-id",
         "name": "Model Name",
-        "description": "Model description"
+        "description": "Model description",
+        "enabled": true
       }
     ]
   }
@@ -102,6 +134,8 @@ See `config/models.example.json` for a minimal configuration example.
 3. The configuration is loaded at startup - runtime changes are not supported
 4. Invalid JSON syntax will prevent the bot from starting
 5. Make sure to keep a backup of your `models.json` before making changes
+6. The `enabled` field is optional and defaults to `true` if not specified
+7. Disabled models are completely hidden from users and cannot be selected
 
 ## Testing Configuration
 
