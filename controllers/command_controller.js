@@ -67,38 +67,45 @@ ${config.COMMANDS.prefix}${config.COMMANDS.search} <查询内容> - 执行网页
 async function handleListCommand(client, msg) {
     try {
         const availableEngines = engines.getAvailableEngines();
-        
+
         if (Object.keys(availableEngines).length === 0) {
             await client.sendMessage(msg.from, "当前没有可用的 AI 引擎，请检查您的配置。");
             return;
         }
-        
+
         let responseText = "*可用的 AI 引擎和模型*\n\n";
-        
+
         // Get user preferences to mark current selections
         const userPrefs = await userPreferences.getUserPreferences(
             msg.author || msg.from.split('@')[0],
             msg.from
         );
-        
+
         for (const [engineName, engineConfig] of Object.entries(availableEngines)) {
             const isCurrentEngine = userPrefs.engine === engineName;
-            responseText += `${isCurrentEngine ? '▶️' : '◾'} *${engineName}*\n`;
-            
+            responseText += `${isCurrentEngine ? '▶️' : '◾'} *${engineName.toUpperCase()}*\n`;
+
+            // Get models with details
+            const modelsWithDetails = engines.getModelsWithDetails(engineName);
+
             // Add models for this engine
-            for (const model of engineConfig.models) {
-                const isCurrentModel = isCurrentEngine && userPrefs.model === model;
-                responseText += `  ${isCurrentModel ? '✅' : '○'} ${model}\n`;
+            for (const modelInfo of modelsWithDetails) {
+                const isCurrentModel = isCurrentEngine && userPrefs.model === modelInfo.id;
+                responseText += `  ${isCurrentModel ? '✅' : '○'} *${modelInfo.id}*`;
+                if (modelInfo.name !== modelInfo.id) {
+                    responseText += ` (${modelInfo.name})`;
+                }
+                responseText += `\n`;
             }
-            
+
             responseText += '\n';
         }
-        
+
         responseText += `您当前的引擎: *${userPrefs.engine}*\n`;
         responseText += `您当前的模型: *${userPrefs.model}*\n\n`;
         responseText += `切换引擎: ${config.COMMANDS.prefix}${config.COMMANDS.use} <引擎>\n`;
         responseText += `切换模型: ${config.COMMANDS.prefix}${config.COMMANDS.model} <模型>`;
-        
+
         await client.sendMessage(msg.from, responseText);
         logger.debug(`Sent engine list to ${msg.from}`);
     } catch (error) {

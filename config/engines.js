@@ -1,53 +1,32 @@
 // config/engines.js
 // AI engines configuration and model options
 
-// Available AI engines
-const ENGINES = {
-    openai: {
-        envKey: 'OPENAI_API_KEY',
-        defaultModel: 'gpt-5',
-        models: [
-            'gpt-5',
-            'gpt-5-mini',
-            'gpt-5-nano',
-            'gpt-4o',
-            'gpt-4o-mini',
-            'o1',
-            'o1-mini',
-            'o1-preview'
-        ]
-    },
-    anthropic: {
-        envKey: 'ANTHROPIC_API_KEY',
-        defaultModel: 'claude-sonnet-4-20250514',
-        models: [
-            'claude-sonnet-4-20250514',
-            'claude-opus-4-20250514',
-            'claude-3-5-sonnet-20241022',
-            'claude-3-5-haiku-20241022',
-            'claude-3-opus-20240229'
-        ]
-    },
-    gemini: {
-        envKey: 'GEMINI_API_KEY',
-        defaultModel: 'gemini-2.0-flash-exp',
-        models: [
-            'gemini-2.0-flash-exp',
-            'gemini-2.0-flash-thinking-exp-01-21',
-            'gemini-exp-1206',
-            'gemini-1.5-pro-latest',
-            'gemini-1.5-flash'
-        ]
-    },
-    deepseek: {
-        envKey: 'DEEPSEEK_API_KEY',
-        defaultModel: 'deepseek-chat',
-        models: [
-            'deepseek-chat',
-            'deepseek-reasoner'
-        ]
-    }
-};
+const fs = require('fs');
+const path = require('path');
+const logger = require('../utils/logger');
+
+// Load model configuration from JSON file
+let MODELS_CONFIG = {};
+try {
+    const configPath = path.join(__dirname, 'models.json');
+    const configData = fs.readFileSync(configPath, 'utf8');
+    MODELS_CONFIG = JSON.parse(configData);
+    logger.info('Model configuration loaded successfully');
+} catch (error) {
+    logger.error(`Failed to load model configuration: ${error.message}`);
+    // Fallback to empty config - will cause errors if models are accessed
+    MODELS_CONFIG = {};
+}
+
+// Transform models config to include just model IDs for backward compatibility
+const ENGINES = {};
+for (const [engineName, engineConfig] of Object.entries(MODELS_CONFIG)) {
+    ENGINES[engineName] = {
+        envKey: engineConfig.envKey,
+        defaultModel: engineConfig.defaultModel,
+        models: engineConfig.models.map(model => model.id)
+    };
+}
 
 // Function to check which engines are available based on environment variables
 function getAvailableEngines() {
@@ -87,8 +66,32 @@ function getDefaultModel(engineName) {
     if (!isEngineAvailable(engineName)) {
         return null;
     }
-    
+
     return ENGINES[engineName].defaultModel;
+}
+
+// Function to get model details (name, description)
+function getModelDetails(engineName, modelId) {
+    if (!MODELS_CONFIG[engineName]) {
+        return null;
+    }
+
+    const model = MODELS_CONFIG[engineName].models.find(m => m.id === modelId);
+    return model || null;
+}
+
+// Function to get all models with details for an engine
+function getModelsWithDetails(engineName) {
+    if (!MODELS_CONFIG[engineName]) {
+        return [];
+    }
+
+    return MODELS_CONFIG[engineName].models;
+}
+
+// Function to get all engines configuration (for listing purposes)
+function getAllEnginesConfig() {
+    return MODELS_CONFIG;
 }
 
 module.exports = {
@@ -96,5 +99,8 @@ module.exports = {
     getAvailableEngines,
     isEngineAvailable,
     isModelAvailable,
-    getDefaultModel
+    getDefaultModel,
+    getModelDetails,
+    getModelsWithDetails,
+    getAllEnginesConfig
 };
