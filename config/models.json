@@ -25,25 +25,25 @@
         "id": "gpt-4o",
         "name": "GPT-4o",
         "description": "Omni model with multimodal capabilities",
-        "enabled": true
+        "enabled": false
       },
       {
         "id": "gpt-4o-mini",
         "name": "GPT-4o Mini",
         "description": "Compact version of GPT-4o",
-        "enabled": true
+        "enabled": false
       },
       {
         "id": "o1",
         "name": "O1",
         "description": "Advanced reasoning model",
-        "enabled": true
+        "enabled": false
       },
       {
         "id": "o1-mini",
         "name": "O1 Mini",
         "description": "Smaller reasoning model",
-        "enabled": true
+        "enabled": false
       },
       {
         "id": "o1-preview",
@@ -61,13 +61,13 @@
         "id": "claude-sonnet-4-20250514",
         "name": "Claude Sonnet 4",
         "description": "Balanced performance and cost",
-        "enabled": true
+        "enabled": false
       },
       {
         "id": "claude-opus-4-20250514",
         "name": "Claude Opus 4",
         "description": "Most capable Claude model",
-        "enabled": true
+        "enabled": false
       },
       {
         "id": "claude-3-5-sonnet-20241022",
@@ -97,7 +97,7 @@
         "id": "gemini-2.0-flash-exp",
         "name": "Gemini 2.0 Flash (Experimental)",
         "description": "Latest experimental flash model",
-        "enabled": true
+        "enabled": false
       },
       {
         "id": "gemini-2.0-flash-thinking-exp-01-21",
