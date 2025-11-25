@@ -72,7 +72,7 @@ async function sendMessage(message, messageHistory, model = config.AI_MODELS.ope
                 tools: [
                     { type: 'web_search' }
                 ],
-                max_completion_tokens: 2000
+                max_output_tokens: 2000  // Responses API uses max_output_tokens, not max_completion_tokens
             };
 
             // Add conversation history if available
