@@ -57,6 +57,39 @@ async function sendMessage(message, messageHistory, model = config.AI_MODELS.ope
     try {
         logger.debug(`Sending message to OpenAI using model: ${model}`);
 
+        // GPT-5 and o1 models use max_completion_tokens, older models use max_tokens
+        const isGPT5 = model.startsWith('gpt-5');
+        const isO1 = model.startsWith('o1') || model.startsWith('o3');
+        const isGPT5orO1 = isGPT5 || isO1;
+
+        // Use Responses API with web_search for GPT-5 when enabled
+        if (config.AI_SEARCH.openai.enabled && isGPT5) {
+            logger.debug('Using Responses API with web_search tool for OpenAI');
+
+            const requestParams = {
+                model: model,
+                input: message,
+                tools: [
+                    { type: 'web_search' }
+                ],
+                max_completion_tokens: 2000
+            };
+
+            // Add conversation history if available
+            if (messageHistory && messageHistory.length > 0) {
+                requestParams.conversation_history = messageHistory;
+            }
+
+            const response = await getOpenAIClient().responses.create(requestParams);
+
+            if (!response.output_text) {
+                throw new Error('No response from OpenAI Responses API');
+            }
+
+            return response.output_text;
+        }
+
+        // Use traditional Chat Completions API for other models
         let requestMessages = [];
 
         // Format messages - maintain all existing message history
@@ -70,23 +103,10 @@ async function sendMessage(message, messageHistory, model = config.AI_MODELS.ope
             content: message
         });
 
-        // GPT-5 and o1 models use max_completion_tokens, older models use max_tokens
-        const isGPT5 = model.startsWith('gpt-5');
-        const isO1 = model.startsWith('o1') || model.startsWith('o3');
-        const isGPT5orO1 = isGPT5 || isO1;
-
         const requestParams = {
             model: model,
             messages: requestMessages
         };
-
-        // Add web_search tool if enabled
-        if (config.AI_SEARCH.openai.enabled && isGPT5) {
-            requestParams.tools = [
-                { type: config.AI_SEARCH.openai.toolType }
-            ];
-            logger.debug('Enabled web_search tool for OpenAI');
-        }
 
         // GPT-5 and o1 models have different parameter requirements
         if (isGPT5orO1) {

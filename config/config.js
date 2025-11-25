@@ -25,7 +25,7 @@ const COMMANDS = {
 // Default settings
 const DEFAULTS = {
     engine: 'openai',
-    model: 'gpt-5',
+    model: 'gpt-5-mini',
     systemPrompt: 'You are a helpful assistant integrated into WhatsApp. Answer questions concisely and accurately.'
 };
 
@@ -63,7 +63,8 @@ const AI_SEARCH = {
         toolType: 'web_search'
     },
     deepseek: {
-        enabled: true,
+        // Temporarily disabled - needs verification of API support
+        enabled: false,
         toolType: 'web_search'
     },
     anthropic: {
