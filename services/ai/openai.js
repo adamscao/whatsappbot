@@ -14,7 +14,9 @@ let openai = null;
 function getOpenAIClient() {
     if (!openai) {
         openai = new OpenAI({
-            apiKey: process.env.OPENAI_API_KEY
+            apiKey: process.env.OPENAI_API_KEY,
+            timeout: 60000, // 60 seconds timeout
+            maxRetries: 2   // Retry up to 2 times on timeout/network errors
         });
     }
     return openai;
@@ -66,37 +68,53 @@ async function sendMessage(message, messageHistory, model = config.AI_MODELS.ope
         if (config.AI_SEARCH.openai.enabled && isGPT5) {
             logger.debug('Using Responses API with web_search tool for OpenAI');
 
-            // Build input with conversation context
-            let contextualInput = message;
+            try {
+                // Build input with conversation context
+                let contextualInput = message;
 
-            // If we have message history, prepend it as context
-            if (messageHistory && messageHistory.length > 0) {
-                const contextMessages = messageHistory
-                    .filter(msg => msg.role !== 'system')
-                    .map(msg => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
-                    .join('\n');
+                // If we have message history, prepend it as context
+                if (messageHistory && messageHistory.length > 0) {
+                    const contextMessages = messageHistory
+                        .filter(msg => msg.role !== 'system')
+                        .map(msg => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
+                        .join('\n');
 
-                if (contextMessages) {
-                    contextualInput = `Previous conversation:\n${contextMessages}\n\nCurrent question: ${message}`;
+                    if (contextMessages) {
+                        contextualInput = `Previous conversation:\n${contextMessages}\n\nCurrent question: ${message}`;
+                    }
                 }
+
+                const requestParams = {
+                    model: model,
+                    input: contextualInput,
+                    tools: [
+                        { type: 'web_search' }
+                    ],
+                    max_output_tokens: 2000
+                };
+
+                logger.debug('Calling Responses API...');
+                const response = await getOpenAIClient().responses.create(requestParams);
+
+                logger.debug(`Responses API response received: ${JSON.stringify(response).substring(0, 200)}...`);
+
+                // Check various possible response formats
+                if (response && response.output_text) {
+                    return response.output_text;
+                } else if (response && response.output) {
+                    return response.output;
+                } else if (response && typeof response === 'string') {
+                    return response;
+                }
+
+                // If we reach here, the response format is unexpected
+                logger.error(`Unexpected Responses API response format: ${JSON.stringify(response)}`);
+                throw new Error('Invalid response format from Responses API');
+
+            } catch (responsesError) {
+                logger.warn(`Responses API failed: ${responsesError.message}, falling back to Chat Completions API`);
+                // Fall through to use traditional Chat Completions API
             }
-
-            const requestParams = {
-                model: model,
-                input: contextualInput,
-                tools: [
-                    { type: 'web_search' }
-                ],
-                max_output_tokens: 2000
-            };
-
-            const response = await getOpenAIClient().responses.create(requestParams);
-
-            if (!response.output_text) {
-                throw new Error('No response from OpenAI Responses API');
-            }
-
-            return response.output_text;
         }
 
         // Use traditional Chat Completions API for other models
