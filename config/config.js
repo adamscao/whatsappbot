@@ -61,8 +61,8 @@ const BOT_IDS = {
 // Message storage configuration
 const MESSAGE_STORAGE = {
     // Maximum number of messages to store for context
-    // Increased to 30 to leverage GPT-5's 400K context window
-    maxContextMessages: 30,
+    // Optimized to 10 for faster responses while maintaining conversation context
+    maxContextMessages: 10,
     // Whether to include system messages in context
     includeSystemMessages: true,
     // Time in hours before context is automatically cleared

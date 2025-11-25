@@ -1,15 +1,25 @@
 // services/ai/deepseek.js
 // DeepSeek API integration service
 
+// Load environment variables first
+require('dotenv').config();
+
 const { OpenAI } = require('openai');
 const logger = require('../../utils/logger');
 const config = require('../../config/config');
 
-// DeepSeek client instance (using OpenAI SDK with custom baseURL)
-const deepseek = new OpenAI({
-    baseURL: 'https://api.deepseek.com',
-    apiKey: process.env.DEEPSEEK_API_KEY
-});
+// DeepSeek client instance - lazy initialization
+let deepseek = null;
+
+function getDeepSeekClient() {
+    if (!deepseek) {
+        deepseek = new OpenAI({
+            baseURL: 'https://api.deepseek.com',
+            apiKey: process.env.DEEPSEEK_API_KEY
+        });
+    }
+    return deepseek;
+}
 
 // Format messages for DeepSeek API (compatible with OpenAI format)
 function formatMessages(message, messageHistory) {
@@ -58,7 +68,7 @@ async function sendMessage(message, messageHistory, model = 'deepseek-chat') {
             temperature = 0.3;
         }
         
-        const response = await deepseek.chat.completions.create({
+        const response = await getDeepSeekClient().chat.completions.create({
             model: model,
             messages: requestMessages,
             temperature: temperature,

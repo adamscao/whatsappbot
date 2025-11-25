@@ -1,12 +1,22 @@
 // services/ai/gemini.js
 // Google Gemini API integration service
 
+// Load environment variables first
+require('dotenv').config();
+
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const logger = require('../../utils/logger');
 const config = require('../../config/config');
 
-// Gemini client instance
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+// Gemini client instance - lazy initialization
+let genAI = null;
+
+function getGeminiClient() {
+    if (!genAI) {
+        genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    }
+    return genAI;
+}
 
 // Format history for Gemini API (converts from OpenAI format)
 function formatChatHistory(messageHistory) {
@@ -45,7 +55,7 @@ async function sendMessage(message, messageHistory, modelName = 'gemini-pro') {
         const formattedHistory = formatChatHistory(messageHistory);
         
         // Create generative model instance with the specified model
-        const model = genAI.getGenerativeModel({ 
+        const model = getGeminiClient().getGenerativeModel({
             model: modelName,
             generationConfig: {
                 temperature: 0.7,
@@ -92,7 +102,7 @@ async function sendMessage(message, messageHistory, modelName = 'gemini-pro') {
 // Translate text using Gemini
 async function translateText(text, sourceLanguage, targetLanguage) {
     try {
-        const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+        const model = getGeminiClient().getGenerativeModel({ model: 'gemini-pro' });
         
         const prompt = `Translate the following text from ${sourceLanguage} to ${targetLanguage}. 
         Only return the translated text without any additional comments or explanations.
@@ -116,7 +126,7 @@ async function translateText(text, sourceLanguage, targetLanguage) {
 // Check if query needs search augmentation
 async function needsSearchAugmentation(query) {
     try {
-        const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+        const model = getGeminiClient().getGenerativeModel({ model: 'gemini-pro' });
         
         const prompt = `Determine if the following query requires current information, external search, or information that might not be in your knowledge. Respond with ONLY "true" or "false" - nothing else.
         
@@ -143,8 +153,8 @@ async function preprocessReminder(reminderText) {
         const now = new Date();
         const currentTimeISO = now.toISOString();
         const currentTimeFormatted = now.toString();
-        
-        const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+
+        const model = getGeminiClient().getGenerativeModel({ model: 'gemini-pro' });
         
         const prompt = `Extract time and content from the following reminder text. The current time is ${currentTimeFormatted} (ISO: ${currentTimeISO}).
         

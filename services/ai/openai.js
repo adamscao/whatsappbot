@@ -1,14 +1,24 @@
 // services/ai/openai.js
 // OpenAI API integration service
 
+// Load environment variables first
+require('dotenv').config();
+
 const { OpenAI } = require('openai');
 const logger = require('../../utils/logger');
 const config = require('../../config/config');
 
-// OpenAI client instance
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
-});
+// OpenAI client instance - lazy initialization
+let openai = null;
+
+function getOpenAIClient() {
+    if (!openai) {
+        openai = new OpenAI({
+            apiKey: process.env.OPENAI_API_KEY
+        });
+    }
+    return openai;
+}
 
 // Format messages for OpenAI API
 function formatMessages(message, messageHistory) {
@@ -43,7 +53,7 @@ function formatMessages(message, messageHistory) {
 }
 
 // Send message to OpenAI
-async function sendMessage(message, messageHistory, model = 'gpt-4o') {
+async function sendMessage(message, messageHistory, model = 'gpt-5') {
     try {
         logger.debug(`Sending message to OpenAI using model: ${model}`);
 
@@ -79,10 +89,10 @@ async function sendMessage(message, messageHistory, model = 'gpt-4o') {
             // GPT-5: 400K context window, 128K max output tokens
             // o1 models: Different limits
             if (isGPT5) {
-                // GPT-5 can handle much larger outputs
-                // Use 16K for search results (detailed responses with citations)
-                // Use 8K for regular queries (comprehensive answers)
-                requestParams.max_completion_tokens = hasSearchResults ? 16000 : 8000;
+                // Optimized for faster responses while maintaining quality
+                // Use 4K for search results (concise responses with citations)
+                // Use 2K for regular queries (faster, focused answers)
+                requestParams.max_completion_tokens = hasSearchResults ? 4000 : 2000;
             } else {
                 // o1 models - use conservative limits
                 requestParams.max_completion_tokens = hasSearchResults ? 4000 : 2000;
@@ -99,7 +109,7 @@ async function sendMessage(message, messageHistory, model = 'gpt-4o') {
             requestParams.presence_penalty = 0;
         }
 
-        const response = await openai.chat.completions.create(requestParams);
+        const response = await getOpenAIClient().chat.completions.create(requestParams);
 
         if (!response.choices || response.choices.length === 0) {
             throw new Error('No response from OpenAI');
@@ -133,7 +143,7 @@ async function translateText(text, sourceLanguage, targetLanguage) {
             }
         ];
 
-        const response = await openai.chat.completions.create({
+        const response = await getOpenAIClient().chat.completions.create({
             model: 'gpt-5-mini', // Using gpt-5-mini for translations
             messages: messages,
             max_completion_tokens: 2000 // gpt-5-mini uses max_completion_tokens
@@ -171,10 +181,10 @@ async function preprocessReminder(reminderText) {
             }
         ];
         
-        const response = await openai.chat.completions.create({
-            model: 'gpt-4o',
+        const response = await getOpenAIClient().chat.completions.create({
+            model: 'gpt-5-mini',
             messages: messages,
-            temperature: 0.2,
+            max_completion_tokens: 1000,
             response_format: { type: "json_object" }
         });
         
@@ -210,10 +220,10 @@ async function needsSearchAugmentation(query) {
             }
         ];
         
-        const response = await openai.chat.completions.create({
-            model: 'gpt-4o',
+        const response = await getOpenAIClient().chat.completions.create({
+            model: 'gpt-5-mini',
             messages: messages,
-            temperature: 0.1,
+            max_completion_tokens: 500,
             response_format: { type: "json_object" }
         });
         
@@ -237,7 +247,7 @@ async function needsSearchAugmentation(query) {
 // Get list of available models
 async function getAvailableModels() {
     try {
-        const response = await openai.models.list();
+        const response = await getOpenAIClient().models.list();
         
         // Filter for chat models only
         const chatModels = response.data.filter(model => 
@@ -250,9 +260,9 @@ async function getAvailableModels() {
         
         // Return hardcoded models as fallback
         return [
-            'gpt-4o',
-            'gpt-4o-mini',
-            'o1-mini'
+            'gpt-5',
+            'gpt-5-mini',
+            'gpt-5-nano'
         ];
     }
 }

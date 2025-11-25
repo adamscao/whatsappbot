@@ -4,21 +4,501 @@
     "defaultModel": "gpt-5",
     "models": [
       {
+        "id": "gpt-audio-2025-08-28",
+        "name": "Gpt Audio 2025 08 28",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-audio-mini-2025-10-06",
+        "name": "Gpt Audio Mini 2025 10 06",
+        "description": "Compact and cost-effective model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-realtime-2025-08-28",
+        "name": "Gpt Realtime 2025 08 28",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-realtime-mini-2025-10-06",
+        "name": "Gpt Realtime Mini 2025 10 06",
+        "description": "Compact and cost-effective model",
+        "enabled": false
+      },
+      {
         "id": "gpt-5",
-        "name": "GPT-5",
-        "description": "Latest GPT-5 model with improved capabilities",
-        "enabled": true
+        "name": "Gpt 5",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-5-2025-08-07",
+        "name": "Gpt 5 2025 08 07",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-5-chat-latest",
+        "name": "Gpt 5 Chat Latest",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-5-codex",
+        "name": "Gpt 5 Codex",
+        "description": "openai chat model",
+        "enabled": false
       },
       {
         "id": "gpt-5-mini",
-        "name": "GPT-5 Mini",
-        "description": "Faster and more cost-effective version of GPT-5",
-        "enabled": true
+        "name": "Gpt 5 Mini",
+        "description": "Compact and cost-effective model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-5-mini-2025-08-07",
+        "name": "Gpt 5 Mini 2025 08 07",
+        "description": "Compact and cost-effective model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-5-nano",
+        "name": "Gpt 5 Nano",
+        "description": "Lightweight and efficient model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-5-nano-2025-08-07",
+        "name": "Gpt 5 Nano 2025 08 07",
+        "description": "Lightweight and efficient model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-5-pro",
+        "name": "Gpt 5 Pro",
+        "description": "Professional-grade model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-5-pro-2025-10-06",
+        "name": "Gpt 5 Pro 2025 10 06",
+        "description": "Professional-grade model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-5-search-api",
+        "name": "Gpt 5 Search Api",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-5-search-api-2025-10-14",
+        "name": "Gpt 5 Search Api 2025 10 14",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-5.1",
+        "name": "Gpt 5.1",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-5.1-2025-11-13",
+        "name": "Gpt 5.1 2025 11 13",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-5.1-chat-latest",
+        "name": "Gpt 5.1 Chat Latest",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-5.1-codex",
+        "name": "Gpt 5.1 Codex",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-5.1-codex-mini",
+        "name": "Gpt 5.1 Codex Mini",
+        "description": "Compact and cost-effective model",
+        "enabled": false
+      },
+      {
+        "id": "chatgpt-4o-latest",
+        "name": "Chatgpt 4o Latest",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4",
+        "name": "Gpt 4",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4-0125-preview",
+        "name": "Gpt 4 0125 Preview",
+        "description": "Experimental model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4-0613",
+        "name": "Gpt 4 0613",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4-1106-preview",
+        "name": "Gpt 4 1106 Preview",
+        "description": "Experimental model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4-turbo",
+        "name": "Gpt 4 Turbo",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4-turbo-2024-04-09",
+        "name": "Gpt 4 Turbo 2024 04 09",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4-turbo-preview",
+        "name": "Gpt 4 Turbo Preview",
+        "description": "Experimental model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4.1",
+        "name": "Gpt 4.1",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4.1-2025-04-14",
+        "name": "Gpt 4.1 2025 04 14",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4.1-mini",
+        "name": "Gpt 4.1 Mini",
+        "description": "Compact and cost-effective model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4.1-mini-2025-04-14",
+        "name": "Gpt 4.1 Mini 2025 04 14",
+        "description": "Compact and cost-effective model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4.1-nano",
+        "name": "Gpt 4.1 Nano",
+        "description": "Lightweight and efficient model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4.1-nano-2025-04-14",
+        "name": "Gpt 4.1 Nano 2025 04 14",
+        "description": "Lightweight and efficient model",
+        "enabled": false
       },
       {
         "id": "gpt-4o",
-        "name": "GPT-4o",
-        "description": "Older model - disabled for now",
+        "name": "Gpt 4o",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4o-2024-05-13",
+        "name": "Gpt 4o 2024 05 13",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4o-2024-08-06",
+        "name": "Gpt 4o 2024 08 06",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4o-2024-11-20",
+        "name": "Gpt 4o 2024 11 20",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4o-audio-preview",
+        "name": "Gpt 4o Audio Preview",
+        "description": "Experimental model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4o-audio-preview-2024-10-01",
+        "name": "Gpt 4o Audio Preview 2024 10 01",
+        "description": "Experimental model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4o-audio-preview-2024-12-17",
+        "name": "Gpt 4o Audio Preview 2024 12 17",
+        "description": "Experimental model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4o-audio-preview-2025-06-03",
+        "name": "Gpt 4o Audio Preview 2025 06 03",
+        "description": "Experimental model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4o-mini",
+        "name": "Gpt 4o Mini",
+        "description": "Compact and cost-effective model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4o-mini-2024-07-18",
+        "name": "Gpt 4o Mini 2024 07 18",
+        "description": "Compact and cost-effective model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4o-mini-audio-preview",
+        "name": "Gpt 4o Mini Audio Preview",
+        "description": "Compact and cost-effective model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4o-mini-audio-preview-2024-12-17",
+        "name": "Gpt 4o Mini Audio Preview 2024 12 17",
+        "description": "Compact and cost-effective model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4o-mini-realtime-preview",
+        "name": "Gpt 4o Mini Realtime Preview",
+        "description": "Compact and cost-effective model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4o-mini-realtime-preview-2024-12-17",
+        "name": "Gpt 4o Mini Realtime Preview 2024 12 17",
+        "description": "Compact and cost-effective model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4o-mini-search-preview",
+        "name": "Gpt 4o Mini Search Preview",
+        "description": "Compact and cost-effective model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4o-mini-search-preview-2025-03-11",
+        "name": "Gpt 4o Mini Search Preview 2025 03 11",
+        "description": "Compact and cost-effective model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4o-mini-transcribe",
+        "name": "Gpt 4o Mini Transcribe",
+        "description": "Compact and cost-effective model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4o-mini-tts",
+        "name": "Gpt 4o Mini Tts",
+        "description": "Compact and cost-effective model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4o-realtime-preview",
+        "name": "Gpt 4o Realtime Preview",
+        "description": "Experimental model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4o-realtime-preview-2024-10-01",
+        "name": "Gpt 4o Realtime Preview 2024 10 01",
+        "description": "Experimental model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4o-realtime-preview-2024-12-17",
+        "name": "Gpt 4o Realtime Preview 2024 12 17",
+        "description": "Experimental model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4o-realtime-preview-2025-06-03",
+        "name": "Gpt 4o Realtime Preview 2025 06 03",
+        "description": "Experimental model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4o-search-preview",
+        "name": "Gpt 4o Search Preview",
+        "description": "Experimental model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4o-search-preview-2025-03-11",
+        "name": "Gpt 4o Search Preview 2025 03 11",
+        "description": "Experimental model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4o-transcribe",
+        "name": "Gpt 4o Transcribe",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-4o-transcribe-diarize",
+        "name": "Gpt 4o Transcribe Diarize",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-3.5-turbo",
+        "name": "Gpt 3.5 Turbo",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-3.5-turbo-0125",
+        "name": "Gpt 3.5 Turbo 0125",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-3.5-turbo-1106",
+        "name": "Gpt 3.5 Turbo 1106",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-3.5-turbo-16k",
+        "name": "Gpt 3.5 Turbo 16k",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-3.5-turbo-instruct",
+        "name": "Gpt 3.5 Turbo Instruct",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-3.5-turbo-instruct-0914",
+        "name": "Gpt 3.5 Turbo Instruct 0914",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "o3-2025-04-16",
+        "name": "O3 2025 04 16",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "o3-deep-research",
+        "name": "O3 Deep Research",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "o3-deep-research-2025-06-26",
+        "name": "O3 Deep Research 2025 06 26",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "o3-mini",
+        "name": "O3 Mini",
+        "description": "Compact and cost-effective model",
+        "enabled": false
+      },
+      {
+        "id": "o3-mini-2025-01-31",
+        "name": "O3 Mini 2025 01 31",
+        "description": "Compact and cost-effective model",
+        "enabled": false
+      },
+      {
+        "id": "o3-pro",
+        "name": "O3 Pro",
+        "description": "Professional-grade model",
+        "enabled": false
+      },
+      {
+        "id": "o3-pro-2025-06-10",
+        "name": "O3 Pro 2025 06 10",
+        "description": "Professional-grade model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-image-1",
+        "name": "Gpt Image 1",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-image-1-mini",
+        "name": "Gpt Image 1 Mini",
+        "description": "Compact and cost-effective model",
+        "enabled": false
+      },
+      {
+        "id": "o1-2024-12-17",
+        "name": "O1 2024 12 17",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "o1-pro",
+        "name": "O1 Pro",
+        "description": "Professional-grade model",
+        "enabled": false
+      },
+      {
+        "id": "o1-pro-2025-03-19",
+        "name": "O1 Pro 2025 03 19",
+        "description": "Professional-grade model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-audio",
+        "name": "Gpt Audio",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-audio-mini",
+        "name": "Gpt Audio Mini",
+        "description": "Compact and cost-effective model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-realtime",
+        "name": "Gpt Realtime",
+        "description": "openai chat model",
+        "enabled": false
+      },
+      {
+        "id": "gpt-realtime-mini",
+        "name": "Gpt Realtime Mini",
+        "description": "Compact and cost-effective model",
         "enabled": false
       }
     ]
@@ -31,7 +511,91 @@
         "id": "claude-sonnet-4-20250514",
         "name": "Claude Sonnet 4",
         "description": "Balanced performance and cost",
-        "enabled": true
+        "enabled": false
+      },
+      {
+        "id": "claude-opus-4-20250514",
+        "name": "Claude Opus 4",
+        "description": "Most capable Claude model",
+        "enabled": false
+      },
+      {
+        "id": "claude-3-7-sonnet-20250219",
+        "name": "Claude 3.7 Sonnet",
+        "description": "Latest Sonnet model with improved capabilities",
+        "enabled": false
+      },
+      {
+        "id": "claude-3-5-sonnet-20241022",
+        "name": "Claude 3.5 Sonnet",
+        "description": "Previous generation Sonnet model",
+        "enabled": false
+      },
+      {
+        "id": "claude-3-5-haiku-20241022",
+        "name": "Claude 3.5 Haiku",
+        "description": "Fast and efficient model",
+        "enabled": false
+      },
+      {
+        "id": "claude-3-opus-20240229",
+        "name": "Claude 3 Opus",
+        "description": "Claude 3 family's most capable model",
+        "enabled": false
+      }
+    ]
+  },
+  "gemini": {
+    "envKey": "GEMINI_API_KEY",
+    "defaultModel": "gemini-2.0-flash-exp",
+    "models": [
+      {
+        "id": "gemini-2.0-flash-exp",
+        "name": "Gemini 2.0 Flash (Experimental)",
+        "description": "Latest experimental flash model",
+        "enabled": false
+      },
+      {
+        "id": "gemini-2.0-flash-thinking-exp-01-21",
+        "name": "Gemini 2.0 Flash Thinking",
+        "description": "Experimental model with enhanced reasoning",
+        "enabled": false
+      },
+      {
+        "id": "gemini-exp-1206",
+        "name": "Gemini Experimental 1206",
+        "description": "Experimental Gemini model",
+        "enabled": false
+      },
+      {
+        "id": "gemini-1.5-pro-latest",
+        "name": "Gemini 1.5 Pro",
+        "description": "Production-ready Pro model",
+        "enabled": false
+      },
+      {
+        "id": "gemini-1.5-flash",
+        "name": "Gemini 1.5 Flash",
+        "description": "Fast and efficient model",
+        "enabled": false
+      }
+    ]
+  },
+  "deepseek": {
+    "envKey": "DEEPSEEK_API_KEY",
+    "defaultModel": "deepseek-chat",
+    "models": [
+      {
+        "id": "deepseek-chat",
+        "name": "Deepseek Chat",
+        "description": "deepseek chat model",
+        "enabled": false
+      },
+      {
+        "id": "deepseek-reasoner",
+        "name": "Deepseek Reasoner",
+        "description": "Specialized reasoning model",
+        "enabled": false
       }
     ]
   }
