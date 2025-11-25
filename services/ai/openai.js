@@ -66,19 +66,29 @@ async function sendMessage(message, messageHistory, model = config.AI_MODELS.ope
         if (config.AI_SEARCH.openai.enabled && isGPT5) {
             logger.debug('Using Responses API with web_search tool for OpenAI');
 
+            // Build input with conversation context
+            let contextualInput = message;
+
+            // If we have message history, prepend it as context
+            if (messageHistory && messageHistory.length > 0) {
+                const contextMessages = messageHistory
+                    .filter(msg => msg.role !== 'system')
+                    .map(msg => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
+                    .join('\n');
+
+                if (contextMessages) {
+                    contextualInput = `Previous conversation:\n${contextMessages}\n\nCurrent question: ${message}`;
+                }
+            }
+
             const requestParams = {
                 model: model,
-                input: message,
+                input: contextualInput,
                 tools: [
                     { type: 'web_search' }
                 ],
-                max_output_tokens: 2000  // Responses API uses max_output_tokens, not max_completion_tokens
+                max_output_tokens: 2000
             };
-
-            // Add conversation history if available
-            if (messageHistory && messageHistory.length > 0) {
-                requestParams.conversation_history = messageHistory;
-            }
 
             const response = await getOpenAIClient().responses.create(requestParams);
 
