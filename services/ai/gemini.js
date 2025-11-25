@@ -38,7 +38,7 @@ function formatChatHistory(messageHistory) {
 }
 
 // Send message to Gemini
-async function sendMessage(message, messageHistory, modelName = 'gemini-pro') {
+async function sendMessage(message, messageHistory, modelName = config.AI_MODELS.gemini.defaultModel) {
     try {
         logger.debug(`Sending message to Gemini using model: ${modelName}`);
         
@@ -102,7 +102,7 @@ async function sendMessage(message, messageHistory, modelName = 'gemini-pro') {
 // Translate text using Gemini
 async function translateText(text, sourceLanguage, targetLanguage) {
     try {
-        const model = getGeminiClient().getGenerativeModel({ model: 'gemini-pro' });
+        const model = getGeminiClient().getGenerativeModel({ model: config.AI_MODELS.gemini.lightModel });
         
         const prompt = `Translate the following text from ${sourceLanguage} to ${targetLanguage}. 
         Only return the translated text without any additional comments or explanations.
@@ -126,7 +126,7 @@ async function translateText(text, sourceLanguage, targetLanguage) {
 // Check if query needs search augmentation
 async function needsSearchAugmentation(query) {
     try {
-        const model = getGeminiClient().getGenerativeModel({ model: 'gemini-pro' });
+        const model = getGeminiClient().getGenerativeModel({ model: config.AI_MODELS.gemini.lightModel });
         
         const prompt = `Determine if the following query requires current information, external search, or information that might not be in your knowledge. Respond with ONLY "true" or "false" - nothing else.
         
@@ -154,7 +154,7 @@ async function preprocessReminder(reminderText) {
         const currentTimeISO = now.toISOString();
         const currentTimeFormatted = now.toString();
 
-        const model = getGeminiClient().getGenerativeModel({ model: 'gemini-pro' });
+        const model = getGeminiClient().getGenerativeModel({ model: config.AI_MODELS.gemini.lightModel });
         
         const prompt = `Extract time and content from the following reminder text. The current time is ${currentTimeFormatted} (ISO: ${currentTimeISO}).
         
@@ -198,12 +198,8 @@ async function preprocessReminder(reminderText) {
 // Get list of available models
 async function getAvailableModels() {
     // Gemini doesn't have a specific API endpoint for listing models
-    // Return hardcoded models based on documentation
-    return [
-        'gemini-2.0-flash-lite',
-        'gemini-2.0-flash',
-        'gemini-1.5-flash'
-    ];
+    // Return configured fallback models
+    return config.AI_MODELS.gemini.fallbackModels;
 }
 
 module.exports = {

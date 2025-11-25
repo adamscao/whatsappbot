@@ -29,6 +29,33 @@ const DEFAULTS = {
     systemPrompt: 'You are a helpful assistant integrated into WhatsApp. Answer questions concisely and accurately.'
 };
 
+// AI Models configuration - configurable models for each engine
+const AI_MODELS = {
+    openai: {
+        // Default model for main conversations
+        defaultModel: 'gpt-5',
+        // Lightweight model for auxiliary tasks (translation, reminder processing, search detection)
+        lightModel: 'gpt-5-mini',
+        // Fallback models when primary model fails
+        fallbackModels: ['gpt-5', 'gpt-5-mini', 'gpt-5-nano']
+    },
+    anthropic: {
+        defaultModel: 'claude-sonnet-4-20250514',
+        lightModel: 'claude-3-5-haiku-20241022',
+        fallbackModels: ['claude-sonnet-4-20250514', 'claude-3-5-haiku-20241022']
+    },
+    gemini: {
+        defaultModel: 'gemini-2.0-flash-exp',
+        lightModel: 'gemini-1.5-flash',
+        fallbackModels: ['gemini-2.0-flash-exp', 'gemini-1.5-flash', 'gemini-1.5-pro-latest']
+    },
+    deepseek: {
+        defaultModel: 'deepseek-chat',
+        lightModel: 'deepseek-chat',
+        fallbackModels: ['deepseek-chat', 'deepseek-reasoner']
+    }
+};
+
 // Cryptocurrency scheduler configuration
 const CRYPTO_SCHEDULER = {
     intervalHours: 4,
@@ -97,6 +124,7 @@ module.exports = {
     DATABASE,
     COMMANDS,
     DEFAULTS,
+    AI_MODELS,
     CRYPTO_SCHEDULER,
     GROUP_WHITELIST,
     BOT_IDS,

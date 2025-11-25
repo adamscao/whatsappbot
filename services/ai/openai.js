@@ -144,9 +144,9 @@ async function translateText(text, sourceLanguage, targetLanguage) {
         ];
 
         const response = await getOpenAIClient().chat.completions.create({
-            model: 'gpt-5-mini', // Using gpt-5-mini for translations
+            model: config.AI_MODELS.openai.lightModel,
             messages: messages,
-            max_completion_tokens: 2000 // gpt-5-mini uses max_completion_tokens
+            max_completion_tokens: 2000
         });
         
         if (!response.choices || response.choices.length === 0) {
@@ -182,7 +182,7 @@ async function preprocessReminder(reminderText) {
         ];
         
         const response = await getOpenAIClient().chat.completions.create({
-            model: 'gpt-5-mini',
+            model: config.AI_MODELS.openai.lightModel,
             messages: messages,
             max_completion_tokens: 1000,
             response_format: { type: "json_object" }
@@ -221,7 +221,7 @@ async function needsSearchAugmentation(query) {
         ];
         
         const response = await getOpenAIClient().chat.completions.create({
-            model: 'gpt-5-mini',
+            model: config.AI_MODELS.openai.lightModel,
             messages: messages,
             max_completion_tokens: 500,
             response_format: { type: "json_object" }
@@ -257,13 +257,9 @@ async function getAvailableModels() {
         return chatModels.map(model => model.id);
     } catch (error) {
         logger.error(`Error getting OpenAI models: ${error.message}`, { error });
-        
-        // Return hardcoded models as fallback
-        return [
-            'gpt-5',
-            'gpt-5-mini',
-            'gpt-5-nano'
-        ];
+
+        // Return configured fallback models
+        return config.AI_MODELS.openai.fallbackModels;
     }
 }
 

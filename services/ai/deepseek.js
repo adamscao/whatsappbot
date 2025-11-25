@@ -54,7 +54,7 @@ function formatMessages(message, messageHistory) {
 }
 
 // Send message to DeepSeek
-async function sendMessage(message, messageHistory, model = 'deepseek-chat') {
+async function sendMessage(message, messageHistory, model = config.AI_MODELS.deepseek.defaultModel) {
     try {
         logger.debug(`Sending message to DeepSeek using model: ${model}`);
         
@@ -122,19 +122,13 @@ async function needsSearchAugmentation(query) {
 async function getAvailableModels() {
     try {
         // DeepSeek doesn't have a specific API endpoint for listing models
-        // Return hardcoded models based on documentation
-        return [
-            'deepseek-chat',
-            'deepseek-reasoner'
-        ];
+        // Return configured fallback models
+        return config.AI_MODELS.deepseek.fallbackModels;
     } catch (error) {
         logger.error(`Error getting DeepSeek models: ${error.message}`, { error });
-        
-        // Return hardcoded models as fallback
-        return [
-            'deepseek-chat',
-            'deepseek-reasoner'
-        ];
+
+        // Return configured fallback models
+        return config.AI_MODELS.deepseek.fallbackModels;
     }
 }
 
