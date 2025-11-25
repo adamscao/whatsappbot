@@ -53,13 +53,9 @@ function formatMessages(message, messageHistory) {
 }
 
 // Send message to OpenAI
-async function sendMessage(message, messageHistory, model = 'gpt-5') {
+async function sendMessage(message, messageHistory, model = config.AI_MODELS.openai.defaultModel) {
     try {
         logger.debug(`Sending message to OpenAI using model: ${model}`);
-
-        // Check if the current message contains search results
-        const hasSearchResults = message.includes('=== SEARCH RESULTS') &&
-                                 message.includes('=== INSTRUCTIONS ===');
 
         let requestMessages = [];
 
@@ -76,7 +72,7 @@ async function sendMessage(message, messageHistory, model = 'gpt-5') {
 
         // GPT-5 and o1 models use max_completion_tokens, older models use max_tokens
         const isGPT5 = model.startsWith('gpt-5');
-        const isO1 = model.startsWith('o1');
+        const isO1 = model.startsWith('o1') || model.startsWith('o3');
         const isGPT5orO1 = isGPT5 || isO1;
 
         const requestParams = {
@@ -84,26 +80,31 @@ async function sendMessage(message, messageHistory, model = 'gpt-5') {
             messages: requestMessages
         };
 
+        // Add web_search tool if enabled
+        if (config.AI_SEARCH.openai.enabled && isGPT5) {
+            requestParams.tools = [
+                { type: config.AI_SEARCH.openai.toolType }
+            ];
+            logger.debug('Enabled web_search tool for OpenAI');
+        }
+
         // GPT-5 and o1 models have different parameter requirements
         if (isGPT5orO1) {
             // GPT-5: 400K context window, 128K max output tokens
             // o1 models: Different limits
             if (isGPT5) {
                 // Optimized for faster responses while maintaining quality
-                // Use 4K for search results (concise responses with citations)
-                // Use 2K for regular queries (faster, focused answers)
-                requestParams.max_completion_tokens = hasSearchResults ? 4000 : 2000;
+                requestParams.max_completion_tokens = 2000;
             } else {
                 // o1 models - use conservative limits
-                requestParams.max_completion_tokens = hasSearchResults ? 4000 : 2000;
+                requestParams.max_completion_tokens = 2000;
             }
             // GPT-5 and o1 only support temperature: 1 (default)
             // Don't set temperature, top_p, frequency_penalty, presence_penalty
         } else {
             // For GPT-4 and earlier models
-            const temperature = hasSearchResults ? 0.3 : 0.7;
-            requestParams.temperature = temperature;
-            requestParams.max_tokens = hasSearchResults ? 2000 : 1000;
+            requestParams.temperature = 0.7;
+            requestParams.max_tokens = 1000;
             requestParams.top_p = 1;
             requestParams.frequency_penalty = 0;
             requestParams.presence_penalty = 0;
@@ -206,44 +207,6 @@ async function preprocessReminder(reminderText) {
     }
 }
 
-// Check if query needs search augmentation
-async function needsSearchAugmentation(query) {
-    try {
-        const messages = [
-            {
-                role: 'system',
-                content: `Determine if the query requires current information, external search, or information that might not be in your knowledge. Respond with a JSON object with a single "needsSearch" boolean field. Example: {"needsSearch": true}`
-            },
-            {
-                role: 'user',
-                content: query
-            }
-        ];
-        
-        const response = await getOpenAIClient().chat.completions.create({
-            model: config.AI_MODELS.openai.lightModel,
-            messages: messages,
-            max_completion_tokens: 500,
-            response_format: { type: "json_object" }
-        });
-        
-        if (!response.choices || response.choices.length === 0) {
-            throw new Error('No search augmentation response from OpenAI');
-        }
-        
-        try {
-            const result = JSON.parse(response.choices[0].message.content);
-            return result.needsSearch === true;
-        } catch (jsonError) {
-            logger.error(`Error parsing search augmentation JSON: ${jsonError.message}`);
-            return true; // Default to true on error
-        }
-    } catch (error) {
-        logger.error(`Error in OpenAI needsSearchAugmentation: ${error.message}`, { error });
-        return true; // Default to true on error
-    }
-}
-
 // Get list of available models
 async function getAvailableModels() {
     try {
@@ -267,6 +230,5 @@ module.exports = {
     sendMessage,
     translateText,
     preprocessReminder,
-    needsSearchAugmentation,
     getAvailableModels
 };

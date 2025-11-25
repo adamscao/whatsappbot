@@ -53,9 +53,9 @@ async function sendMessage(message, messageHistory, modelName = config.AI_MODELS
         
         // Format message history for Gemini
         const formattedHistory = formatChatHistory(messageHistory);
-        
-        // Create generative model instance with the specified model
-        const model = getGeminiClient().getGenerativeModel({
+
+        // Prepare model configuration
+        const modelConfig = {
             model: modelName,
             generationConfig: {
                 temperature: 0.7,
@@ -64,7 +64,18 @@ async function sendMessage(message, messageHistory, modelName = config.AI_MODELS
                 maxOutputTokens: 1000,
             },
             systemInstruction: systemPrompt
-        });
+        };
+
+        // Add Google Search tool if enabled
+        if (config.AI_SEARCH.gemini.enabled) {
+            modelConfig.tools = [
+                { googleSearch: {} }
+            ];
+            logger.debug('Enabled Google Search tool for Gemini');
+        }
+
+        // Create generative model instance with the specified model
+        const model = getGeminiClient().getGenerativeModel(modelConfig);
         
         let response;
         
@@ -120,29 +131,6 @@ async function translateText(text, sourceLanguage, targetLanguage) {
     } catch (error) {
         logger.error(`Error in Gemini translateText: ${error.message}`, { error });
         throw error;
-    }
-}
-
-// Check if query needs search augmentation
-async function needsSearchAugmentation(query) {
-    try {
-        const model = getGeminiClient().getGenerativeModel({ model: config.AI_MODELS.gemini.lightModel });
-        
-        const prompt = `Determine if the following query requires current information, external search, or information that might not be in your knowledge. Respond with ONLY "true" or "false" - nothing else.
-        
-        Query: "${query}"`;
-        
-        const response = await model.generateContent(prompt);
-        
-        if (!response || !response.response) {
-            throw new Error('No search augmentation response from Gemini');
-        }
-        
-        const result = response.response.text().trim().toLowerCase();
-        return result === 'true';
-    } catch (error) {
-        logger.error(`Error in Gemini needsSearchAugmentation: ${error.message}`, { error });
-        return true; // Default to true on error to be safe
     }
 }
 
@@ -206,6 +194,5 @@ module.exports = {
     sendMessage,
     translateText,
     preprocessReminder,
-    needsSearchAugmentation,
     getAvailableModels
 };

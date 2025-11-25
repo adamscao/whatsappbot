@@ -100,55 +100,9 @@ async function preprocessReminder(reminderText) {
     }
 }
 
-// Check if query needs search augmentation
-async function needsSearchAugmentation(query) {
-    try {
-        if (!engines.isEngineAvailable('openai')) {
-            // If OpenAI is not available, default to true to be safe
-            logger.warn("OpenAI not available for search augmentation check, defaulting to true");
-            return true;
-        }
-        
-        return await openaiService.needsSearchAugmentation(query);
-    } catch (error) {
-        logger.error(`Error in needsSearchAugmentation: ${error.message}`, { error });
-        // Default to true in case of error
-        return true;
-    }
-}
-
-// Process search query (translate if needed)
-async function processSearchQuery(query, useChineseSearch = false) {
-    try {
-        if (useChineseSearch) {
-            // If Chinese search is requested, ensure query is in Chinese
-            if (!engines.isEngineAvailable('openai')) {
-                // Cannot translate, return original
-                return query;
-            }
-            
-            return await openaiService.translateText(query, 'auto', 'zh-CN');
-        } else {
-            // Ensure query is in English for better search results
-            if (!engines.isEngineAvailable('openai')) {
-                // Cannot translate, return original
-                return query;
-            }
-            
-            return await openaiService.translateText(query, 'auto', 'en');
-        }
-    } catch (error) {
-        logger.error(`Error in processSearchQuery: ${error.message}`, { error });
-        // Return original query in case of error
-        return query;
-    }
-}
-
 module.exports = {
     sendMessage,
     translateText,
     preprocessReminder,
-    needsSearchAugmentation,
-    processSearchQuery,
     getAIService
 };

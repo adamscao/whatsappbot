@@ -57,18 +57,18 @@ function formatMessages(message, messageHistory) {
 async function sendMessage(message, messageHistory, model = config.AI_MODELS.deepseek.defaultModel) {
     try {
         logger.debug(`Sending message to DeepSeek using model: ${model}`);
-        
+
         // Format messages for DeepSeek API
         const requestMessages = formatMessages(message, messageHistory);
-        
+
         // Set different temperature based on model
         let temperature = 0.7;
         if (model === 'deepseek-reasoner') {
             // Lower temperature for more factual responses from the reasoner model
             temperature = 0.3;
         }
-        
-        const response = await getDeepSeekClient().chat.completions.create({
+
+        const requestParams = {
             model: model,
             messages: requestMessages,
             temperature: temperature,
@@ -76,45 +76,26 @@ async function sendMessage(message, messageHistory, model = config.AI_MODELS.dee
             top_p: 1,
             frequency_penalty: 0,
             presence_penalty: 0
-        });
-        
+        };
+
+        // Add web_search tool if enabled
+        if (config.AI_SEARCH.deepseek.enabled) {
+            requestParams.tools = [
+                { type: config.AI_SEARCH.deepseek.toolType }
+            ];
+            logger.debug('Enabled web_search tool for DeepSeek');
+        }
+
+        const response = await getDeepSeekClient().chat.completions.create(requestParams);
+
         if (!response.choices || response.choices.length === 0) {
             throw new Error('No response from DeepSeek');
         }
-        
+
         return response.choices[0].message.content;
     } catch (error) {
         logger.error(`Error in DeepSeek sendMessage: ${error.message}`, { error });
         throw error;
-    }
-}
-
-// Check if query needs search augmentation
-// This uses a simple heuristic approach since DeepSeek doesn't have a specific API for this
-async function needsSearchAugmentation(query) {
-    try {
-        // Keywords that might indicate a need for search
-        const searchIndicators = [
-            'current', 'latest', 'news', 'recent', 'today', 'yesterday',
-            '最新', '新闻', '近期', '今天', '昨天',
-            'what is', 'how to', 'who is', 'where is', 'when did',
-            '什么是', '如何', '谁是', '在哪里', '什么时候'
-        ];
-        
-        const lowerQuery = query.toLowerCase();
-        
-        // Check if query contains any of the indicators
-        for (const indicator of searchIndicators) {
-            if (lowerQuery.includes(indicator.toLowerCase())) {
-                return true;
-            }
-        }
-        
-        // Default to false - don't always need search
-        return false;
-    } catch (error) {
-        logger.error(`Error in DeepSeek needsSearchAugmentation: ${error.message}`, { error });
-        return true; // Default to true on error to be safe
     }
 }
 
@@ -134,6 +115,5 @@ async function getAvailableModels() {
 
 module.exports = {
     sendMessage,
-    needsSearchAugmentation,
     getAvailableModels
 };

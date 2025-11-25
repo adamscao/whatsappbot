@@ -33,11 +33,11 @@ const DEFAULTS = {
 const AI_MODELS = {
     openai: {
         // Default model for main conversations
-        defaultModel: 'gpt-5',
-        // Lightweight model for auxiliary tasks (translation, reminder processing, search detection)
-        lightModel: 'gpt-5-mini',
+        defaultModel: 'gpt-5-mini',
+        // Lightweight model for auxiliary tasks (translation, reminder processing)
+        lightModel: 'gpt-5-nano',
         // Fallback models when primary model fails
-        fallbackModels: ['gpt-5', 'gpt-5-mini', 'gpt-5-nano']
+        fallbackModels: ['gpt-5-mini', 'gpt-5-nano', 'gpt-5']
     },
     anthropic: {
         defaultModel: 'claude-sonnet-4-20250514',
@@ -53,6 +53,25 @@ const AI_MODELS = {
         defaultModel: 'deepseek-chat',
         lightModel: 'deepseek-chat',
         fallbackModels: ['deepseek-chat', 'deepseek-reasoner']
+    }
+};
+
+// AI Search configuration - enable/disable web search for each engine
+const AI_SEARCH = {
+    openai: {
+        enabled: true,
+        toolType: 'web_search'
+    },
+    deepseek: {
+        enabled: true,
+        toolType: 'web_search'
+    },
+    anthropic: {
+        enabled: false
+    },
+    gemini: {
+        enabled: true,
+        toolType: 'googleSearch'
     }
 };
 
@@ -125,6 +144,7 @@ module.exports = {
     COMMANDS,
     DEFAULTS,
     AI_MODELS,
+    AI_SEARCH,
     CRYPTO_SCHEDULER,
     GROUP_WHITELIST,
     BOT_IDS,

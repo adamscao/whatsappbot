@@ -5,7 +5,6 @@ const commandController = require('./command_controller');
 const messageModel = require('../database/models/message');
 const userPreferences = require('../database/models/user_preferences');
 const aiService = require('../services/ai/ai_service');
-const searchService = require('../services/search/search_service');
 const messageParser = require('../utils/message_parser');
 const logger = require('../utils/logger');
 const config = require('../config/config');
@@ -43,142 +42,41 @@ async function processAIResponse(client, msg, userId, chatId, isGroup) {
 
         // Get message history for context
         const messageHistory = await getMessageHistory(chatId, userId);
-        
+
         // Use the already processed message text (bot mentions already removed in app.js)
-        let messageText = msg.body;
-        
-        // Check if we should perform a search first
-        let needsSearch = false;
-        let searchResults = null;
-        
-        try {
-            needsSearch = await aiService.needsSearchAugmentation(messageText);
-            
-            if (needsSearch) {
-                logger.debug(`Search augmentation needed for message: ${messageText}`);
-                
-                // Check if user wants Chinese search
-                const useChineseSearch = isChineseSearchRequested(messageText);
-                
-                // Process query for search
-                const processedQuery = await aiService.processSearchQuery(messageText, useChineseSearch);
-                
-                // Perform search
-                searchResults = await searchService.search(processedQuery, useChineseSearch);
-                
-                if (searchResults && searchResults.length > 0) {
-                    logger.debug(`Got ${searchResults.length} search results`);
-                }
-            }
-        } catch (searchError) {
-            logger.error(`Error during search augmentation: ${searchError.message}`, { error: searchError });
-            // Continue without search results
-        }
-        
-        // Detect if the original question is in Chinese
-        const isChinese = /[\u4e00-\u9fa5]/.test(messageText);
+        const messageText = msg.body;
 
-        // Add search results to message if available
-        let augmentedMessage = messageText;
-        let translatedQueryForAI = messageText;
-
-        if (searchResults && searchResults.length > 0) {
-            logger.debug(`Adding ${searchResults.length} search results to AI context`);
-
-            // If Chinese question with English search results, translate question to English for AI
-            if (isChinese) {
-                try {
-                    translatedQueryForAI = await aiService.translateText(messageText, 'zh-CN', 'en');
-                    logger.debug(`Translated question to English for AI: ${translatedQueryForAI}`);
-                } catch (translateError) {
-                    logger.error(`Error translating question: ${translateError.message}`);
-                    translatedQueryForAI = messageText; // Fallback to original
-                }
-            }
-
-            // Format search results with better structure and instructions
-            // Use up to 3 results for faster responses with focused information
-            const numResults = Math.min(searchResults.length, 3);
-
-            augmentedMessage = `User Question: ${translatedQueryForAI}\n\n`;
-            augmentedMessage += `=== SEARCH RESULTS (${numResults} sources) ===\n\n`;
-
-            for (let i = 0; i < numResults; i++) {
-                const result = searchResults[i];
-                augmentedMessage += `Source ${i + 1}:\n`;
-                augmentedMessage += `Title: ${result.title}\n`;
-                augmentedMessage += `URL: ${result.link}\n`;
-                augmentedMessage += `Content: ${result.snippet}\n`;
-                augmentedMessage += `---\n\n`;
-            }
-
-            augmentedMessage += `=== INSTRUCTIONS ===\n`;
-            augmentedMessage += `Based on the search results above, please provide a comprehensive and accurate answer to the user's question.\n\n`;
-            augmentedMessage += `Guidelines:\n`;
-            augmentedMessage += `1. Synthesize information from multiple sources when relevant\n`;
-            augmentedMessage += `2. Cite sources by their number (e.g., "According to Source 1...")\n`;
-            augmentedMessage += `3. If sources conflict, acknowledge different perspectives\n`;
-            augmentedMessage += `4. Focus on answering the specific question asked\n`;
-            augmentedMessage += `5. Be concise but thorough - aim for clarity over length\n`;
-            augmentedMessage += `6. If the search results don't fully answer the question, acknowledge what's missing\n\n`;
-            augmentedMessage += `Question: ${translatedQueryForAI}`;
-        }
-
-        // Send to AI service
+        // Send to AI service (AI engines now have built-in web search)
         let aiResponse;
         try {
-            logger.debug(`Sending augmented message to AI: length=${augmentedMessage.length}`);
-            aiResponse = await aiService.sendMessage(userId, chatId, augmentedMessage, messageHistory);
+            logger.debug(`Sending message to AI: "${messageText}"`);
+            aiResponse = await aiService.sendMessage(userId, chatId, messageText, messageHistory);
         } catch (aiError) {
             logger.error(`Error getting AI response: ${aiError.message}`, { error: aiError });
             aiResponse = "I'm sorry, I encountered an error processing your request. Please try again later.";
         }
 
-        // If original question was Chinese and we have search results, translate the response back to Chinese
-        let responseText = String(aiResponse || "I'm sorry, I couldn't generate a response.");
-        if (isChinese && searchResults && searchResults.length > 0 && aiResponse) {
-            try {
-                const translatedResponse = await aiService.translateText(aiResponse, 'en', 'zh-CN');
-                logger.debug(`Translated AI response back to Chinese`);
-                responseText = translatedResponse;
-            } catch (translateError) {
-                logger.error(`Error translating response: ${translateError.message}`);
-                // Keep original response if translation fails
-            }
-        }
+        const responseText = String(aiResponse || "I'm sorry, I couldn't generate a response.");
 
         await client.sendMessage(chatId, responseText);
 
         // Save AI response to database
         await saveMessageToDatabase(msg, chatId, responseText, 'assistant');
-        
+
         logger.debug(`Sent AI response to ${chatId}`);
     } catch (error) {
         logger.error(`Error in processAIResponse: ${error.message}`, { error });
-        
+
         // Send error message
         try {
             await client.sendMessage(
-                msg.from, 
+                msg.from,
                 "I'm sorry, I encountered an error while processing your message. Please try again later."
             );
         } catch (sendError) {
             logger.error(`Error sending error message: ${sendError.message}`, { error: sendError });
         }
     }
-}
-
-// Check if message indicates Chinese search is requested
-function isChineseSearchRequested(message) {
-    const lowerCaseMsg = message.toLowerCase();
-    return (
-        message.includes('中文') || 
-        message.includes('中国') || 
-        message.includes('用中文') || 
-        lowerCaseMsg.includes('in chinese') || 
-        lowerCaseMsg.includes('chinese search') || 
-        lowerCaseMsg.includes('search in chinese')
-    );
 }
 
 // Save message to database
